@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react';
-import { Word, WordSet, GradeLevel, GameMode, ChildProfile, WordAttempt, GameSession, AvatarConfig } from '@/types';
+import { Word, WordSet, GradeLevel, GameMode, ChildProfile, WordAttempt, GameSession, AvatarConfig, OwnedItem, ItemPlacement } from '@/types';
 import { getRandomWords } from '@/data/wordBank';
 
 interface GameState {
@@ -10,6 +10,8 @@ interface GameState {
   currentWordIndex: number;
   attempts: number;
   showAnswer: boolean;
+  ownedItems: OwnedItem[];
+  roomPlacements: ItemPlacement[];
 }
 
 interface GameContextType extends GameState {
@@ -19,12 +21,16 @@ interface GameContextType extends GameState {
   setCurrentWordSet: (wordSet: WordSet | null) => void;
   startGame: (mode: GameMode) => void;
   submitAnswer: (answer: string, word: Word) => { correct: boolean; shouldShowAnswer: boolean };
-  nextWord: () => boolean; // returns true if there are more words
+  nextWord: () => boolean;
   endGame: () => GameSession | null;
   addCoins: (amount: number) => void;
   addXp: (amount: number) => void;
   updateAvatar: (config: Partial<AvatarConfig>) => void;
   speakWord: (word: string, rate?: number) => void;
+  purchaseItem: (itemId: string, price: number) => boolean;
+  isItemOwned: (itemId: string) => boolean;
+  toggleEquipItem: (itemId: string) => void;
+  updateRoomPlacements: (placements: ItemPlacement[]) => void;
 }
 
 const defaultAvatar: AvatarConfig = {
@@ -53,7 +59,7 @@ const defaultChild: ChildProfile = {
   avatarConfig: defaultAvatar,
   xp: 0,
   level: 1,
-  coins: 50,
+  coins: 100,
   createdAt: new Date(),
   settings: {
     dailyGoalMinutes: 15,
@@ -74,6 +80,8 @@ export function GameProvider({ children }: { children: ReactNode }) {
   const [attempts, setAttempts] = useState(0);
   const [showAnswer, setShowAnswer] = useState(false);
   const [sessionAttempts, setSessionAttempts] = useState<WordAttempt[]>([]);
+  const [ownedItems, setOwnedItems] = useState<OwnedItem[]>([]);
+  const [roomPlacements, setRoomPlacements] = useState<ItemPlacement[]>([]);
 
   const setCurrentChild = (child: ChildProfile | null) => {
     setCurrentChildState(child);
@@ -242,7 +250,6 @@ export function GameProvider({ children }: { children: ReactNode }) {
 
   const speakWord = (word: string, rate = 0.8) => {
     if ('speechSynthesis' in window) {
-      // Cancel any ongoing speech
       window.speechSynthesis.cancel();
       
       const utterance = new SpeechSynthesisUtterance(word);
@@ -250,7 +257,6 @@ export function GameProvider({ children }: { children: ReactNode }) {
       utterance.pitch = 1;
       utterance.volume = 1;
       
-      // Try to use a child-friendly voice
       const voices = window.speechSynthesis.getVoices();
       const preferredVoice = voices.find(v => 
         v.name.includes('Samantha') || 
@@ -265,6 +271,45 @@ export function GameProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const purchaseItem = (itemId: string, price: number): boolean => {
+    if (!currentChild || currentChild.coins < price) return false;
+    if (ownedItems.some(item => item.itemId === itemId)) return false;
+    
+    addCoins(-price);
+    setOwnedItems(prev => [...prev, {
+      itemId,
+      childId: currentChild.id,
+      acquiredAt: new Date(),
+      equipped: false,
+    }]);
+    return true;
+  };
+
+  const isItemOwned = (itemId: string): boolean => {
+    return ownedItems.some(item => item.itemId === itemId);
+  };
+
+  const toggleEquipItem = (itemId: string) => {
+    setOwnedItems(prev => prev.map(item => 
+      item.itemId === itemId 
+        ? { ...item, equipped: !item.equipped }
+        : item
+    ));
+    
+    // Update avatar accessories if it's an avatar item
+    if (currentChild) {
+      const isEquipped = ownedItems.find(i => i.itemId === itemId)?.equipped;
+      const newAccessories = isEquipped
+        ? currentChild.avatarConfig.accessories.filter(a => a !== itemId)
+        : [...currentChild.avatarConfig.accessories, itemId];
+      updateAvatar({ accessories: newAccessories });
+    }
+  };
+
+  const updateRoomPlacements = (placements: ItemPlacement[]) => {
+    setRoomPlacements(placements);
+  };
+
   return (
     <GameContext.Provider
       value={{
@@ -275,6 +320,8 @@ export function GameProvider({ children }: { children: ReactNode }) {
         currentWordIndex,
         attempts,
         showAnswer,
+        ownedItems,
+        roomPlacements,
         setCurrentChild,
         createRandomWordSet,
         createCustomWordSet,
@@ -287,6 +334,10 @@ export function GameProvider({ children }: { children: ReactNode }) {
         addXp,
         updateAvatar,
         speakWord,
+        purchaseItem,
+        isItemOwned,
+        toggleEquipItem,
+        updateRoomPlacements,
       }}
     >
       {children}
