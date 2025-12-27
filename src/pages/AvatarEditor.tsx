@@ -2,8 +2,9 @@ import { useNavigate } from 'react-router-dom';
 import { useGame } from '@/contexts/GameContext';
 import { Avatar } from '@/components/Avatar';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Check } from 'lucide-react';
+import { ArrowLeft, Check, ShoppingBag } from 'lucide-react';
 import { useState } from 'react';
+import { getAvatarItems } from '@/data/shopItems';
 
 const hairStyles = ['short', 'long', 'curly', 'ponytail'];
 const skinTones = ['#FFDBB4', '#EDB98A', '#D08B5B', '#8D5524', '#4A2C0A'];
@@ -12,14 +13,31 @@ const shirtColors = ['#4ECDC4', '#FF6B6B', '#95E1D3', '#F38181', '#AA96DA'];
 
 export default function AvatarEditor() {
   const navigate = useNavigate();
-  const { currentChild, updateAvatar } = useGame();
+  const { currentChild, updateAvatar, ownedItems, toggleEquipItem } = useGame();
   const [config, setConfig] = useState(currentChild?.avatarConfig);
 
   if (!currentChild || !config) return null;
 
+  const avatarItems = getAvatarItems();
+  const ownedAccessories = ownedItems
+    .filter(owned => avatarItems.some(item => item.id === owned.itemId && item.category === 'avatar-accessories'))
+    .map(owned => ({
+      ...owned,
+      item: avatarItems.find(item => item.id === owned.itemId)!
+    }));
+
   const handleUpdate = (key: string, value: string) => {
     setConfig({ ...config, [key]: value });
     updateAvatar({ [key]: value });
+  };
+
+  const handleToggleAccessory = (itemId: string) => {
+    const newAccessories = config.accessories.includes(itemId)
+      ? config.accessories.filter(a => a !== itemId)
+      : [...config.accessories, itemId];
+    
+    setConfig({ ...config, accessories: newAccessories });
+    updateAvatar({ accessories: newAccessories });
   };
 
   return (
@@ -81,6 +99,41 @@ export default function AvatarEditor() {
                     style={{ backgroundColor: color }} />
                 ))}
               </div>
+            </div>
+
+            {/* Accessories Section */}
+            <div>
+              <p className="font-bold mb-2">Accessories</p>
+              {ownedAccessories.length === 0 ? (
+                <div className="bg-muted rounded-xl p-4 text-center">
+                  <p className="text-muted-foreground text-sm mb-2">No accessories yet!</p>
+                  <Button variant="outline" size="sm" onClick={() => navigate('/shop')} className="gap-1">
+                    <ShoppingBag className="h-4 w-4" />
+                    Visit Shop
+                  </Button>
+                </div>
+              ) : (
+                <div className="flex gap-2 flex-wrap">
+                  {ownedAccessories.map(({ itemId, item }) => {
+                    const isEquipped = config.accessories.includes(itemId);
+                    return (
+                      <button
+                        key={itemId}
+                        onClick={() => handleToggleAccessory(itemId)}
+                        className={`flex items-center gap-2 px-3 py-2 rounded-xl border-2 transition-all ${
+                          isEquipped 
+                            ? 'border-primary bg-primary/10 ring-2 ring-primary/30' 
+                            : 'border-border bg-muted hover:bg-muted/80'
+                        }`}
+                      >
+                        <span className="text-xl">{item.imageUrl}</span>
+                        <span className="text-sm font-medium">{item.name}</span>
+                        {isEquipped && <Check className="h-4 w-4 text-primary" />}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           </div>
         </div>

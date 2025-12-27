@@ -11,6 +11,7 @@ import GameHub from "./pages/GameHub";
 import GamePlay from "./pages/GamePlay";
 import AvatarEditor from "./pages/AvatarEditor";
 import Shop from "./pages/Shop";
+import MyRoom from "./pages/MyRoom";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -30,6 +31,7 @@ const App = () => (
             <Route path="/games/:mode" element={<GamePlay />} />
             <Route path="/avatar" element={<AvatarEditor />} />
             <Route path="/shop" element={<Shop />} />
+            <Route path="/room" element={<MyRoom />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
