@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useGame } from '@/contexts/GameContext';
 import { Button } from '@/components/ui/button';
@@ -10,7 +10,15 @@ import { toast } from 'sonner';
 export default function MyRoom() {
   const navigate = useNavigate();
   const { currentChild, ownedItems, roomPlacements, updateRoomPlacements } = useGame();
-  const [editMode, setEditMode] = useState(false);
+    useEffect(() => {
+    if (!currentChild) navigate('/parent', { replace: true });
+  }, [currentChild, navigate]);
+
+  if (!currentChild) {
+    return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
+  }
+
+const [editMode, setEditMode] = useState(false);
   const [selectedItem, setSelectedItem] = useState<string | null>(null);
   const [showInventory, setShowInventory] = useState(false);
 

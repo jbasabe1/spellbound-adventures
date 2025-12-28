@@ -6,23 +6,36 @@ import { GradeSelector } from '@/components/GradeSelector';
 import { Avatar } from '@/components/Avatar';
 import { GradeLevel, Word } from '@/types';
 import { getWordsByGrade } from '@/data/wordBank';
-import { BookOpen, User, ShoppingBag, Sparkles, Coins, Play } from 'lucide-react';
+import { BookOpen, User, ShoppingBag, Sparkles, Coins, Play, Save, List } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { useToast } from '@/hooks/use-toast';
+import { Progress } from '@/components/ui/progress';
 
 export default function ChildHome() {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const {
     currentChild,
     currentWordSet,
     setCurrentChild,
     createRandomWordSet,
     setCurrentWordSet,
-    startGame
+    startGame,
+    saveCurrentWordSet,
+    savedWordSets,
   } = useGame();
 
-  const [showGradeSelect, setShowGradeSelect] = useState(!currentChild?.grade);
-  const [selectedWordIndexes, setSelectedWordIndexes] = useState<number[]>([]);
+    useEffect(() => {
+    if (!currentChild) navigate('/parent', { replace: true });
+  }, [currentChild, navigate]);
 
-    // Default grade is Grade 1 unless the player has changed it
+const [showGradeSelect, setShowGradeSelect] = useState(!currentChild?.grade);
+  const [selectedWordIndexes, setSelectedWordIndexes] = useState<number[]>([]);
+  const [showSaveDialog, setShowSaveDialog] = useState(false);
+  const [listName, setListName] = useState('');
+
+  // Default grade is Grade 1 unless the player has changed it
   useEffect(() => {
     if (!currentChild) return;
     if (!currentChild.grade) {
@@ -32,7 +45,7 @@ export default function ChildHome() {
     }
   }, [currentChild]);
 
-// ensure we always have a practice set for the selected grade
+  // ensure we always have a practice set for the selected grade
   useEffect(() => {
     if (!currentChild?.grade) return;
 
@@ -148,9 +161,35 @@ export default function ChildHome() {
     setSelectedWordIndexes([]);
   };
 
+  const handleSaveList = () => {
+    if (!listName.trim()) {
+      toast({ title: 'Please enter a name for your list', variant: 'destructive' });
+      return;
+    }
+    
+    if (savedWordSets.length >= 10) {
+      toast({ title: 'Maximum 10 lists allowed', description: 'Delete a list to save a new one', variant: 'destructive' });
+      return;
+    }
+
+    const success = saveCurrentWordSet(listName.trim());
+    if (success) {
+      toast({ title: 'List saved!', description: `"${listName}" has been saved` });
+      setShowSaveDialog(false);
+      setListName('');
+    }
+  };
+
   if (!currentChild) {
     return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
   }
+
+  // XP progress calculations
+  const xpPerLevel = 100;
+  const currentLevelXp = (currentChild.level - 1) * xpPerLevel;
+  const xpInCurrentLevel = currentChild.xp - currentLevelXp;
+  const xpProgress = (xpInCurrentLevel / xpPerLevel) * 100;
+  const xpToNextLevel = xpPerLevel - xpInCurrentLevel;
 
   return (
     <div className="min-h-screen pt-20 pb-8 px-4 bg-gradient-to-b from-town-sky to-background">
@@ -164,6 +203,15 @@ export default function ChildHome() {
             Hi, {currentChild.name}! 👋
           </h1>
           <p className="text-muted-foreground">Level {currentChild.level} Speller</p>
+
+          {/* XP Progress Bar */}
+          <div className="mt-3 px-4">
+            <div className="flex items-center justify-between text-xs text-muted-foreground mb-1">
+              <span>Level {currentChild.level}</span>
+              <span>{xpToNextLevel} XP to Level {currentChild.level + 1}</span>
+            </div>
+            <Progress value={xpProgress} className="h-2" />
+          </div>
 
           {/* Stats Bar */}
           <div className="flex justify-center gap-4 mt-4">
@@ -198,7 +246,7 @@ export default function ChildHome() {
             </Button>
 
             {/* Main Actions */}
-            <div className="grid grid-cols-2 gap-4 mb-6">
+            <div className="grid grid-cols-2 gap-4 mb-4">
               <Button
                 variant="kid"
                 size="lg"
@@ -240,6 +288,22 @@ export default function ChildHome() {
               </Button>
             </div>
 
+            {/* Saved Lists Button */}
+            <Button
+              variant="outline"
+              size="lg"
+              onClick={() => navigate('/saved-lists')}
+              className="w-full mb-4 gap-2"
+            >
+              <List className="h-5 w-5" />
+              Saved Word Lists
+              {savedWordSets.length > 0 && (
+                <span className="ml-auto bg-primary/10 text-primary px-2 py-0.5 rounded-full text-xs font-bold">
+                  {savedWordSets.length}
+                </span>
+              )}
+            </Button>
+
             {/* Current Grade */}
             <button
               onClick={() => setShowGradeSelect(true)}
@@ -280,34 +344,74 @@ export default function ChildHome() {
           </div>
 
           {currentWordSet?.words ? (
-            <div className="grid grid-cols-5 gap-2">
-              {currentWordSet.words.slice(0, 10).map((w, i) => {
-                const isSelected = selectedWordIndexes.includes(i);
-                return (
-                  <button
-                    key={`${w.id}-${i}`}
-                    onClick={() => toggleWordIndex(i)}
-                    className={`text-sm font-semibold rounded-xl px-2 py-2 shadow-soft border transition-all ${
-                      isSelected
-                        ? 'bg-primary text-primary-foreground border-primary'
-                        : 'bg-background hover:bg-muted border-border'
-                    }`}
-                    aria-pressed={isSelected}
-                    title={isSelected ? 'Selected to reroll' : 'Tap to select'}
-                  >
-                    {w.word}
-                  </button>
-                );
-              })}
-            </div>
+            <>
+              <div className="grid grid-cols-5 gap-2 mb-3">
+                {currentWordSet.words.slice(0, 10).map((w, i) => {
+                  const isSelected = selectedWordIndexes.includes(i);
+                  return (
+                    <button
+                      key={`${w.id}-${i}`}
+                      onClick={() => toggleWordIndex(i)}
+                      className={`text-sm font-semibold rounded-xl px-2 py-2 shadow-soft border transition-all ${
+                        isSelected
+                          ? 'bg-primary text-primary-foreground border-primary'
+                          : 'bg-background hover:bg-muted border-border'
+                      }`}
+                      aria-pressed={isSelected}
+                      title={isSelected ? 'Selected to reroll' : 'Tap to select'}
+                    >
+                      {w.word}
+                    </button>
+                  );
+                })}
+              </div>
+              
+              {/* Save List Button */}
+              <Button
+                variant="ghost"
+                size="sm"
+                className="w-full gap-2 text-muted-foreground hover:text-foreground"
+                onClick={() => setShowSaveDialog(true)}
+                disabled={savedWordSets.length >= 10}
+              >
+                <Save className="h-4 w-4" />
+                Save This List ({savedWordSets.length}/10)
+              </Button>
+            </>
           ) : (
             <div className="text-sm text-muted-foreground">
               Pick a grade to generate your first word set.
             </div>
           )}
         </div>
-
       </div>
+
+      {/* Save List Dialog */}
+      <Dialog open={showSaveDialog} onOpenChange={setShowSaveDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Save Word List</DialogTitle>
+          </DialogHeader>
+          <div className="py-4">
+            <label className="text-sm font-medium mb-2 block">List Name</label>
+            <Input
+              placeholder="e.g., Week 1 Words, Tricky Words..."
+              value={listName}
+              onChange={(e) => setListName(e.target.value)}
+              maxLength={30}
+              autoFocus
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowSaveDialog(false)}>
+              Cancel
+            </Button>
+            <Button variant="game" onClick={handleSaveList}>
+              Save List
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
