@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useMemo, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useEffect, useMemo, useRef, useState, ReactNode } from 'react';
 import {
   Word,
   WordSet,
@@ -170,6 +170,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
   const [attempts, setAttempts] = useState(0);
   const [showAnswer, setShowAnswer] = useState(false);
   const [sessionAttempts, setSessionAttempts] = useState<WordAttempt[]>([]);
+  const sessionAttemptsRef = useRef<WordAttempt[]>([]);
 
   // Per-child state slices
   const [ownedItems, setOwnedItems] = useState<OwnedItem[]>(() => {
@@ -332,6 +333,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
     setAttempts(0);
     setShowAnswer(false);
     setSessionAttempts([]);
+    sessionAttemptsRef.current = [];
 
     const session: GameSession = {
       id: `session-${Date.now()}`,
@@ -366,7 +368,8 @@ export function GameProvider({ children }: { children: ReactNode }) {
         timeSpent: 0,
         answer: normalizedAnswer,
       };
-      setSessionAttempts(prev => [...prev, attempt]);
+      sessionAttemptsRef.current = [...sessionAttemptsRef.current, attempt];
+      setSessionAttempts(sessionAttemptsRef.current);
       setShowAnswer(false);
       return { correct: true, shouldShowAnswer: false };
     }
@@ -381,7 +384,8 @@ export function GameProvider({ children }: { children: ReactNode }) {
         timeSpent: 0,
         answer: normalizedAnswer,
       };
-      setSessionAttempts(prev => [...prev, attempt]);
+      sessionAttemptsRef.current = [...sessionAttemptsRef.current, attempt];
+      setSessionAttempts(sessionAttemptsRef.current);
       setShowAnswer(true);
       return { correct: false, shouldShowAnswer: true };
     }
@@ -405,7 +409,8 @@ export function GameProvider({ children }: { children: ReactNode }) {
     if (!currentSession || !currentWordSet) return null;
 
     const totalWords = currentWordSet.words.length;
-    const correctWords = sessionAttempts.filter(a => a.correct).length;
+    const finalAttempts = sessionAttemptsRef.current;
+    const correctWords = finalAttempts.filter(a => a.correct).length;
     const accuracy = totalWords > 0 ? (correctWords / totalWords) * 100 : 0;
 
     // Reward: base coins + xp scaled by accuracy
@@ -419,31 +424,54 @@ export function GameProvider({ children }: { children: ReactNode }) {
       accuracy,
       coinsEarned,
       xpEarned,
-      attempts: sessionAttempts,
+      attempts: finalAttempts,
+      totalWords,
     };
 
     setCurrentSession(completedSession);
 
     // Apply rewards to profile
-    addCoins(coinsEarned);
-    addXp(xpEarned);
+    applyRewards(coinsEarned, xpEarned);
 
     return completedSession;
   };
 
+  const updateCurrentChild = (updater: (prev: ChildProfile) => ChildProfile) => {
+    setCurrentChildState(prev => {
+      if (!prev) return prev;
+      const next = updater(prev);
+      setChildSaves(saves => {
+        const existing = saves[next.id];
+        const nextSave: ChildSaveData = existing
+          ? { ...existing, profile: next }
+          : { profile: next, ownedItems: [], roomPlacements: [], savedWordSets: [] };
+        return { ...saves, [next.id]: nextSave };
+      });
+      return next;
+    });
+  };
+
+  const applyRewards = (coins: number, xp: number) => {
+    updateCurrentChild(prev => {
+      const xpPerLevel = 100;
+      const newCoins = prev.coins + coins;
+      const newXp = prev.xp + xp;
+      const newLevel = Math.floor(newXp / xpPerLevel) + 1;
+      return { ...prev, coins: newCoins, xp: newXp, level: newLevel };
+    });
+  };
+
   const addCoins = (amount: number) => {
-    if (!currentChild) return;
-    const next = { ...currentChild, coins: currentChild.coins + amount };
-    setCurrentChild(next);
+    updateCurrentChild(prev => ({ ...prev, coins: prev.coins + amount }));
   };
 
   const addXp = (amount: number) => {
-    if (!currentChild) return;
-    const newXp = currentChild.xp + amount;
-    const xpPerLevel = 100;
-    const newLevel = Math.floor(newXp / xpPerLevel) + 1;
-    const next = { ...currentChild, xp: newXp, level: newLevel };
-    setCurrentChild(next);
+    updateCurrentChild(prev => {
+      const xpPerLevel = 100;
+      const newXp = prev.xp + amount;
+      const newLevel = Math.floor(newXp / xpPerLevel) + 1;
+      return { ...prev, xp: newXp, level: newLevel };
+    });
   };
 
   const updateAvatar = (config: Partial<AvatarConfig>) => {

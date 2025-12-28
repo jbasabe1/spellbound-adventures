@@ -75,6 +75,7 @@ export interface GameSession {
   completedAt?: Date;
   score: number;
   accuracy: number;
+  totalWords?: number;
   coinsEarned: number;
   xpEarned: number;
   attempts: WordAttempt[];
