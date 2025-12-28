@@ -1,6 +1,8 @@
-import React, { createContext, useContext, useState, ReactNode } from 'react';
-import { Word, WordSet, GradeLevel, GameMode, ChildProfile, WordAttempt, GameSession, AvatarConfig, OwnedItem, ItemPlacement } from '@/types';
+import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
+import { Word, WordSet, GradeLevel, GameMode, ChildProfile, WordAttempt, GameSession, AvatarConfig, OwnedItem, ItemPlacement, SavedWordSet } from '@/types';
 import { getRandomWords } from '@/data/wordBank';
+
+const MAX_SAVED_LISTS = 10;
 
 interface GameState {
   currentChild: ChildProfile | null;
@@ -12,6 +14,7 @@ interface GameState {
   showAnswer: boolean;
   ownedItems: OwnedItem[];
   roomPlacements: ItemPlacement[];
+  savedWordSets: SavedWordSet[];
 }
 
 interface GameContextType extends GameState {
@@ -31,6 +34,9 @@ interface GameContextType extends GameState {
   isItemOwned: (itemId: string) => boolean;
   toggleEquipItem: (itemId: string) => void;
   updateRoomPlacements: (placements: ItemPlacement[]) => void;
+  saveCurrentWordSet: (name: string) => boolean;
+  loadSavedWordSet: (id: string) => void;
+  deleteSavedWordSet: (id: string) => void;
 }
 
 const defaultAvatar: AvatarConfig = {
@@ -82,6 +88,22 @@ export function GameProvider({ children }: { children: ReactNode }) {
   const [sessionAttempts, setSessionAttempts] = useState<WordAttempt[]>([]);
   const [ownedItems, setOwnedItems] = useState<OwnedItem[]>([]);
   const [roomPlacements, setRoomPlacements] = useState<ItemPlacement[]>([]);
+  const [savedWordSets, setSavedWordSets] = useState<SavedWordSet[]>(() => {
+    const stored = localStorage.getItem('spelltown-saved-wordsets');
+    if (stored) {
+      try {
+        return JSON.parse(stored);
+      } catch {
+        return [];
+      }
+    }
+    return [];
+  });
+
+  // Persist saved word sets to localStorage
+  useEffect(() => {
+    localStorage.setItem('spelltown-saved-wordsets', JSON.stringify(savedWordSets));
+  }, [savedWordSets]);
 
   const setCurrentChild = (child: ChildProfile | null) => {
     setCurrentChildState(child);
@@ -168,6 +190,17 @@ export function GameProvider({ children }: { children: ReactNode }) {
     setAttempts(newAttempts);
     
     if (newAttempts >= 2) {
+      // Record failed attempt when showing the answer
+      const attempt: WordAttempt = {
+        wordId: word.id,
+        word: word.word,
+        attempts: newAttempts,
+        correct: false,
+        hintsUsed: 0,
+        timeSpent: 0,
+        answer: normalizedAnswer,
+      };
+      setSessionAttempts(prev => [...prev, attempt]);
       setShowAnswer(true);
       return { correct: false, shouldShowAnswer: true };
     }
@@ -317,6 +350,41 @@ export function GameProvider({ children }: { children: ReactNode }) {
     setRoomPlacements(placements);
   };
 
+  const saveCurrentWordSet = (name: string): boolean => {
+    if (!currentWordSet || savedWordSets.length >= MAX_SAVED_LISTS) return false;
+    
+    const savedSet: SavedWordSet = {
+      id: `saved-${Date.now()}`,
+      name,
+      grade: currentWordSet.grade,
+      words: [...currentWordSet.words],
+      savedAt: new Date(),
+    };
+    
+    setSavedWordSets(prev => [...prev, savedSet]);
+    return true;
+  };
+
+  const loadSavedWordSet = (id: string) => {
+    const savedSet = savedWordSets.find(s => s.id === id);
+    if (!savedSet) return;
+    
+    const wordSet: WordSet = {
+      id: `loaded-${Date.now()}`,
+      name: savedSet.name,
+      type: 'saved',
+      grade: savedSet.grade,
+      words: [...savedSet.words],
+      createdAt: new Date(),
+    };
+    
+    setCurrentWordSet(wordSet);
+  };
+
+  const deleteSavedWordSet = (id: string) => {
+    setSavedWordSets(prev => prev.filter(s => s.id !== id));
+  };
+
   return (
     <GameContext.Provider
       value={{
@@ -329,6 +397,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
         showAnswer,
         ownedItems,
         roomPlacements,
+        savedWordSets,
         setCurrentChild,
         createRandomWordSet,
         createCustomWordSet,
@@ -345,6 +414,9 @@ export function GameProvider({ children }: { children: ReactNode }) {
         isItemOwned,
         toggleEquipItem,
         updateRoomPlacements,
+        saveCurrentWordSet,
+        loadSavedWordSet,
+        deleteSavedWordSet,
       }}
     >
       {children}

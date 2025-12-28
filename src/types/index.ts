@@ -30,7 +30,7 @@ export interface Word {
 export interface WordSet {
   id: string;
   name: string;
-  type: 'random' | 'custom';
+  type: 'random' | 'custom' | 'saved';
   grade: GradeLevel;
   words: Word[];
   createdAt: Date;
@@ -39,6 +39,15 @@ export interface WordSet {
     lengthRange?: [number, number];
     theme?: string;
   };
+}
+
+// Saved word set for persistence
+export interface SavedWordSet {
+  id: string;
+  name: string;
+  grade: GradeLevel;
+  words: Word[];
+  savedAt: Date;
 }
 
 // Mastery state for a word
