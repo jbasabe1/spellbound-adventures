@@ -24,7 +24,6 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <Header />
-          <div className="fixed bottom-2 right-2 text-xs opacity-60 pointer-events-none">Sync test: 2025-12-28 00:15:58</div>
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/play" element={<ChildHome />} />
