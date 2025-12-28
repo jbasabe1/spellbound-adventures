@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useGame } from '@/contexts/GameContext';
 import { Button } from '@/components/ui/button';
@@ -34,6 +34,91 @@ const [showGradeSelect, setShowGradeSelect] = useState(!currentChild?.grade);
   const [selectedWordIndexes, setSelectedWordIndexes] = useState<number[]>([]);
   const [showSaveDialog, setShowSaveDialog] = useState(false);
   const [listName, setListName] = useState('');
+
+  const [showEditWordDialog, setShowEditWordDialog] = useState(false);
+  const [editWordIndex, setEditWordIndex] = useState<number | null>(null);
+  const [editWordText, setEditWordText] = useState('');
+  const lastTapRef = useRef<{ index: number; time: number } | null>(null);
+
+  const estimateSyllables = (w: string) => {
+    const s = w.toLowerCase().replace(/[^a-z]/g, '');
+    if (!s) return 1;
+    const groups = s.match(/[aeiouy]+/g);
+    return Math.max(1, groups ? groups.length : 1);
+  };
+
+  const openEditWord = (index: number) => {
+    if (!currentWordSet) return;
+    // If the word was selected on first tap, clear it so double tap feels like "edit" not "select"
+    setSelectedWordIndexes(prev => prev.filter(i => i !== index));
+    setEditWordIndex(index);
+    setEditWordText(currentWordSet.words[index]?.word ?? '');
+    setShowEditWordDialog(true);
+  };
+
+  const handleWordTap = (index: number) => {
+    const now = Date.now();
+    const last = lastTapRef.current;
+
+    // Double-tap within 320ms opens the edit dialog
+    if (last && last.index === index && now - last.time < 320) {
+      lastTapRef.current = null;
+      openEditWord(index);
+      return;
+    }
+
+    lastTapRef.current = { index, time: now };
+    toggleWordIndex(index);
+  };
+
+  const applyEditedWord = () => {
+    if (!currentChild?.grade || !currentWordSet) return;
+    if (editWordIndex === null) return;
+
+    const cleaned = editWordText.trim().toLowerCase();
+
+    if (!/^[a-z]+$/.test(cleaned)) {
+      toast({
+        title: 'Use letters only',
+        description: 'Please type a word using letters A–Z only.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    const duplicate = currentWordSet.words.some((w, i) => i !== editWordIndex && w.word.toLowerCase() === cleaned);
+    if (duplicate) {
+      toast({
+        title: 'Word already in this set',
+        description: 'Pick a different word so there are no repeats in the 10-word set.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    const newWord: Word = {
+      id: `mw-${currentChild.grade}-${Date.now()}-${editWordIndex}`,
+      word: cleaned,
+      grade: currentChild.grade,
+      length: cleaned.length,
+      syllables: estimateSyllables(cleaned),
+      phonicsPattern: [],
+      isSightWord: false,
+      difficulty: Math.min(5, Math.max(1, Math.ceil(cleaned.length / 3))),
+    };
+
+    const nextWords = currentWordSet.words.map((w, i) => (i === editWordIndex ? newWord : w));
+    setCurrentWordSet({ ...currentWordSet, words: nextWords });
+
+    setShowEditWordDialog(false);
+    setEditWordIndex(null);
+    setEditWordText('');
+
+    toast({
+      title: 'Word updated',
+      description: 'Your custom word will be used in games just like the others.',
+    });
+  };
 
   // Default grade is Grade 1 unless the player has changed it
   useEffect(() => {
@@ -372,7 +457,7 @@ const [showGradeSelect, setShowGradeSelect] = useState(!currentChild?.grade);
                   return (
                     <button
                       key={`${w.id}-${i}`}
-                      onClick={() => toggleWordIndex(i)}
+                      onClick={() => handleWordTap(i)}
                       className={`text-sm font-semibold rounded-xl px-2 py-2 shadow-soft border transition-all ${
                         isSelected
                           ? 'bg-primary text-primary-foreground border-primary'
@@ -408,7 +493,37 @@ const [showGradeSelect, setShowGradeSelect] = useState(!currentChild?.grade);
       </div>
 
       {/* Save List Dialog */}
-      <Dialog open={showSaveDialog} onOpenChange={setShowSaveDialog}>
+      
+      <Dialog open={showEditWordDialog} onOpenChange={setShowEditWordDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit Word</DialogTitle>
+          </DialogHeader>
+          <div className="py-4">
+            <label className="text-sm font-medium mb-2 block">New Word</label>
+            <Input
+              placeholder="Type a new word..."
+              value={editWordText}
+              onChange={(e) => setEditWordText(e.target.value)}
+              maxLength={20}
+              autoFocus
+            />
+            <p className="text-xs text-muted-foreground mt-2">
+              Letters only. This change is for the current 10-word practice set (it does not permanently add to the word bank).
+            </p>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowEditWordDialog(false)}>
+              Cancel
+            </Button>
+            <Button variant="game" onClick={applyEditedWord}>
+              Use Word
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+<Dialog open={showSaveDialog} onOpenChange={setShowSaveDialog}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Save Word List</DialogTitle>

@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { GradeSelector } from '@/components/GradeSelector';
 import { GradeLevel, Word } from '@/types';
 import { Lock, Plus, Trash2, Edit3, Play } from 'lucide-react';
-import { addCustomWord, listCustomWords, removeCustomWord } from '@/data/wordBank';
+import { addCustomWord, getWordsByGrade, listCustomWords, removeCustomWord } from '@/data/wordBank';
 
 export default function ParentPortal() {
   const navigate = useNavigate();
@@ -40,6 +40,22 @@ export default function ParentPortal() {
   const refreshCustomWords = () => setCustomWords(listCustomWords());
 
   const handleAddCustomWord = () => {
+    if (!customWordGrade) {
+      setError('Pick a grade first.');
+      return;
+    }
+
+    const normalized = customWordText.trim().toLowerCase();
+    const existsInBase = getWordsByGrade(customWordGrade).some(w => w.word.toLowerCase() === normalized);
+    const existsInCustom = customWords.some(
+      w => w.grade === customWordGrade && w.word.toLowerCase() === normalized
+    );
+
+    if (existsInBase || existsInCustom) {
+      setError('That word is already in the word bank for this grade.');
+      return;
+    }
+
     const created = addCustomWord(customWordText, customWordGrade);
     if (!created) {
       setError('Could not add that word. Make sure it is letters only and not already in the bank for that grade.');
