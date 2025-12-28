@@ -14,6 +14,7 @@ import Shop from "./pages/Shop";
 import MyRoom from "./pages/MyRoom";
 import SavedLists from "./pages/SavedLists";
 import NotFound from "./pages/NotFound";
+import ParentPortal from "./pages/ParentPortal";
 
 const queryClient = new QueryClient();
 
@@ -28,6 +29,7 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/play" element={<ChildHome />} />
+            <Route path="/parent" element={<ParentPortal />} />
             <Route path="/games" element={<GameHub />} />
             <Route path="/games/:mode" element={<GamePlay />} />
             <Route path="/avatar" element={<AvatarEditor />} />

@@ -26,7 +26,11 @@ export default function ChildHome() {
     savedWordSets,
   } = useGame();
 
-  const [showGradeSelect, setShowGradeSelect] = useState(!currentChild?.grade);
+    useEffect(() => {
+    if (!currentChild) navigate('/parent', { replace: true });
+  }, [currentChild, navigate]);
+
+const [showGradeSelect, setShowGradeSelect] = useState(!currentChild?.grade);
   const [selectedWordIndexes, setSelectedWordIndexes] = useState<number[]>([]);
   const [showSaveDialog, setShowSaveDialog] = useState(false);
   const [listName, setListName] = useState('');

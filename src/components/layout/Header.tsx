@@ -1,12 +1,42 @@
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useGame } from '@/contexts/GameContext';
-import { Home, BookOpen, User, ShoppingBag, Settings, Sparkles, Coins } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { useState } from 'react';
+import { Home, BookOpen, User, ShoppingBag, Sparkles, Coins, Lock } from 'lucide-react';
 
 export function Header() {
   const location = useLocation();
-  const { currentChild } = useGame();
+  const navigate = useNavigate();
+  const { currentChild, parentPinSet, verifyParentPin } = useGame();
+  const [open, setOpen] = useState(false);
+  const [pin, setPin] = useState('');
+  const [pinError, setPinError] = useState<string | null>(null);
   
+  const openParentPortal = () => {
+    // If no PIN has been created yet, allow direct access
+    if (!parentPinSet) {
+      navigate('/parent');
+      return;
+    }
+    setPin('');
+    setPinError(null);
+    setOpen(true);
+  };
+
+  const submitPin = () => {
+    const ok = verifyParentPin(pin);
+    if (!ok) {
+      setPinError('Incorrect PIN');
+      return;
+    }
+    setOpen(false);
+    setPin('');
+    setPinError(null);
+    navigate('/parent');
+  };
+
   const isChildMode = location.pathname.startsWith('/play') || 
                       location.pathname.startsWith('/games') ||
                       location.pathname.startsWith('/avatar') ||
@@ -66,6 +96,11 @@ export function Header() {
           </Link>
         </nav>
 
+        {/* Parent Portal */}
+        <Button variant="ghost" size="icon-sm" className="rounded-xl" onClick={openParentPortal} title="Parent Portal">
+          <Lock className="h-5 w-5" />
+        </Button>
+
         {/* Stats */}
         {currentChild && (
           <div className="flex items-center gap-3">
@@ -82,6 +117,30 @@ export function Header() {
           </div>
         )}
       </div>
+
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent className="sm:max-w-md rounded-3xl">
+          <DialogHeader>
+            <DialogTitle>Parent Portal</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <Input
+              value={pin}
+              onChange={(e) => setPin(e.target.value)}
+              placeholder="Enter PIN"
+              type="password"
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') submitPin();
+              }}
+            />
+            {pinError && <p className="text-sm text-destructive">{pinError}</p>}
+            <Button variant="game" className="w-full" onClick={submitPin}>
+              Continue
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
     </header>
   );
 }
