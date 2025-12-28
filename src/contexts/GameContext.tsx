@@ -19,7 +19,7 @@ interface GameContextType extends GameState {
   createRandomWordSet: (grade: GradeLevel, count?: number, name?: string) => WordSet;
   createCustomWordSet: (name: string, words: Word[], grade: GradeLevel) => WordSet;
   setCurrentWordSet: (wordSet: WordSet | null) => void;
-  startGame: (mode: GameMode) => void;
+  startGame: (mode: GameMode, wordSetOverride?: WordSet) => void;
   submitAnswer: (answer: string, word: Word) => { correct: boolean; shouldShowAnswer: boolean };
   nextWord: () => boolean;
   endGame: () => GameSession | null;
@@ -111,8 +111,15 @@ export function GameProvider({ children }: { children: ReactNode }) {
     };
   };
 
-  const startGame = (mode: GameMode) => {
-    if (!currentWordSet || !currentChild) return;
+  const startGame = (mode: GameMode, wordSetOverride?: WordSet) => {
+    const wordSetToUse = wordSetOverride ?? currentWordSet;
+    if (!wordSetToUse || !currentChild) return;
+
+    // If a new word set was provided (e.g., Quick Play), persist it into state
+    if (wordSetOverride) {
+      setCurrentWordSet(wordSetOverride);
+    }
+
     
     setCurrentGameMode(mode);
     setCurrentWordIndex(0);
@@ -123,7 +130,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
     const session: GameSession = {
       id: `session-${Date.now()}`,
       childId: currentChild.id,
-      wordSetId: currentWordSet.id,
+      wordSetId: wordSetToUse.id,
       gameMode: mode,
       startedAt: new Date(),
       score: 0,

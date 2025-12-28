@@ -2,7 +2,7 @@ import { useNavigate } from 'react-router-dom';
 import { useGame } from '@/contexts/GameContext';
 import { Button } from '@/components/ui/button';
 import { GameMode } from '@/types';
-import { Volume2, Layers, CheckSquare, Shuffle, ArrowLeft } from 'lucide-react';
+import { Volume2, Layers, CheckSquare, Shuffle, ArrowLeft, Search, Headphones, Type, TrendingUp } from 'lucide-react';
 
 const gameModes: { mode: GameMode; name: string; description: string; icon: React.ReactNode; color: string }[] = [
   { 
@@ -21,10 +21,10 @@ const gameModes: { mode: GameMode; name: string; description: string; icon: Reac
   },
   { 
     mode: 'multiple-choice', 
-    name: 'Pick the Spelling', 
-    description: 'Choose the correct spelling',
+    name: 'Multiple Choice', 
+    description: 'Pick the correct spelling',
     icon: <CheckSquare className="h-8 w-8" />,
-    color: 'from-success to-emerald-400'
+    color: 'from-amber-500 to-yellow-400'
   },
   { 
     mode: 'word-scramble', 
@@ -33,7 +33,36 @@ const gameModes: { mode: GameMode; name: string; description: string; icon: Reac
     icon: <Shuffle className="h-8 w-8" />,
     color: 'from-purple-500 to-pink-500'
   },
+  { 
+    mode: 'practice-ladder', 
+    name: 'Practice Ladder', 
+    description: 'Look, cover, write, check!',
+    icon: <TrendingUp className="h-8 w-8" />,
+    color: 'from-emerald-500 to-teal-500'
+  },
+  { 
+    mode: 'missing-letters', 
+    name: 'Missing Letters', 
+    description: 'Fill in the blanks',
+    icon: <Type className="h-8 w-8" />,
+    color: 'from-rose-500 to-orange-500'
+  },
+  { 
+    mode: 'audio-match', 
+    name: 'Audio Match', 
+    description: 'Hear it, then choose it',
+    icon: <Headphones className="h-8 w-8" />,
+    color: 'from-indigo-500 to-sky-500'
+  },
+  { 
+    mode: 'word-search', 
+    name: 'Word Search', 
+    description: 'Find the word in a grid',
+    icon: <Search className="h-8 w-8" />,
+    color: 'from-fuchsia-500 to-violet-500'
+  },
 ];
+
 
 export default function GameHub() {
   const navigate = useNavigate();
