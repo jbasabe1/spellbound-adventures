@@ -3,7 +3,7 @@ import { useGame } from '@/contexts/GameContext';
 import { Avatar } from '@/components/Avatar';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Check, ShoppingBag } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { getAvatarItems } from '@/data/shopItems';
 
 const hairStyles = ['short', 'long', 'curly', 'ponytail'];
@@ -14,7 +14,15 @@ const shirtColors = ['#4ECDC4', '#FF6B6B', '#95E1D3', '#F38181', '#AA96DA'];
 export default function AvatarEditor() {
   const navigate = useNavigate();
   const { currentChild, updateAvatar, ownedItems, toggleEquipItem } = useGame();
-  const [config, setConfig] = useState(currentChild?.avatarConfig);
+    useEffect(() => {
+    if (!currentChild) navigate('/parent', { replace: true });
+  }, [currentChild, navigate]);
+
+  if (!currentChild) {
+    return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
+  }
+
+const [config, setConfig] = useState(currentChild?.avatarConfig);
 
   if (!currentChild || !config) return null;
 

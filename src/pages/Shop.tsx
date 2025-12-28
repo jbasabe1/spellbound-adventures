@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useGame } from '@/contexts/GameContext';
 import { Button } from '@/components/ui/button';
@@ -11,7 +11,15 @@ type TabType = 'avatar' | 'room';
 export default function Shop() {
   const navigate = useNavigate();
   const { currentChild, purchaseItem, isItemOwned } = useGame();
-  const [activeTab, setActiveTab] = useState<TabType>('avatar');
+    useEffect(() => {
+    if (!currentChild) navigate('/parent', { replace: true });
+  }, [currentChild, navigate]);
+
+  if (!currentChild) {
+    return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
+  }
+
+const [activeTab, setActiveTab] = useState<TabType>('avatar');
 
   if (!currentChild) return null;
 

@@ -7,7 +7,15 @@ export default function SavedLists() {
   const navigate = useNavigate();
   const { savedWordSets, loadSavedWordSet, deleteSavedWordSet } = useGame();
 
-  const handleLoad = (id: string) => {
+    useEffect(() => {
+    if (!currentChild) navigate('/parent', { replace: true });
+  }, [currentChild, navigate]);
+
+  if (!currentChild) {
+    return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
+  }
+
+const handleLoad = (id: string) => {
     loadSavedWordSet(id);
     navigate('/play');
   };

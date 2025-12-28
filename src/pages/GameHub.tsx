@@ -68,7 +68,15 @@ export default function GameHub() {
   const navigate = useNavigate();
   const { currentWordSet, currentChild, createRandomWordSet, setCurrentWordSet, startGame } = useGame();
 
-  const handleSelectGame = (mode: GameMode) => {
+    useEffect(() => {
+    if (!currentChild) navigate('/parent', { replace: true });
+  }, [currentChild, navigate]);
+
+  if (!currentChild) {
+    return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
+  }
+
+const handleSelectGame = (mode: GameMode) => {
     // Create word set if not already set
     if (!currentWordSet && currentChild) {
       const wordSet = createRandomWordSet(currentChild.grade, 10);
