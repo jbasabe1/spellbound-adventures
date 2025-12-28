@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useGame } from '@/contexts/GameContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { CheckCircle, XCircle, ArrowRight, HelpCircle } from 'lucide-react';
+import { CheckCircle, XCircle, ArrowRight, HelpCircle, Volume2 } from 'lucide-react';
 import { Word } from '@/types';
 
 interface MissingLettersProps {
@@ -35,7 +35,8 @@ export function MissingLetters({ onComplete }: MissingLettersProps) {
     currentWordIndex,
     showAnswer,
     submitAnswer,
-    nextWord
+    nextWord,
+    speakWord
   } = useGame();
 
   const currentWord: Word | undefined = currentWordSet?.words[currentWordIndex];
@@ -132,6 +133,19 @@ export function MissingLetters({ onComplete }: MissingLettersProps) {
         <p className="text-muted-foreground text-center mb-6">
           Type the letters that replace the blanks (in order).
         </p>
+
+
+        <div className=\"flex justify-center mb-4\">
+<Button
+            variant="kid"
+            size="sm"
+            onClick={() => currentWord && speakWord(currentWord.word)}
+            className="gap-2"
+          >
+            <Volume2 className="h-4 w-4" />
+            Hear Word
+          </Button>
+        </div>
 
         <div className="text-center text-4xl font-bold tracking-widest mb-5">
           {maskInfo.masked}

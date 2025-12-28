@@ -120,10 +120,12 @@ const [showGradeSelect, setShowGradeSelect] = useState(!currentChild?.grade);
     const grade = currentChild.grade;
     const pool = getWordsByGrade(grade);
 
-    const keepIndexes = new Set<number>(
-      [0, 1, 2, 3, 4, 5, 6, 7, 8, 9].filter(i => !selectedWordIndexes.includes(i))
-    );
+    const allIndexes = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
+    const keepIndexes = new Set<number>(allIndexes.filter(i => !selectedWordIndexes.includes(i)));
 
+    // Don't allow any rerolled word to repeat within the set,
+    // and also don't allow a reroll to "pick" any of the previous words.
+    const previousWords = new Set<string>(currentWordSet.words.map(w => w.word.toLowerCase()));
     const used = new Set<string>();
 
     // keep words that are not being rerolled
@@ -131,13 +133,33 @@ const [showGradeSelect, setShowGradeSelect] = useState(!currentChild?.grade);
       if (keepIndexes.has(i)) used.add(w.word.toLowerCase());
     });
 
-    const nextWords: Word[] = currentWordSet.words.map(w => w);
     const shuffled = [...pool].sort(() => Math.random() - 0.5);
     let cursor = 0;
 
     const pickNext = (): Word => {
+      // First pass: shuffled scan
       while (cursor < shuffled.length) {
         const candidate = shuffled[cursor++];
+        const key = candidate.word.toLowerCase();
+        if (!used.has(key) && !previousWords.has(key)) {
+          used.add(key);
+          return candidate;
+        }
+      }
+
+      // Second pass: random sampling attempts (still avoiding previous words)
+      for (let tries = 0; tries < pool.length * 2; tries++) {
+        const candidate = pool[Math.floor(Math.random() * pool.length)];
+        const key = candidate.word.toLowerCase();
+        if (!used.has(key) && !previousWords.has(key)) {
+          used.add(key);
+          return candidate;
+        }
+      }
+
+      // Absolute fallback: avoid duplicates at least
+      for (let tries = 0; tries < pool.length * 2; tries++) {
+        const candidate = pool[Math.floor(Math.random() * pool.length)];
         const key = candidate.word.toLowerCase();
         if (!used.has(key)) {
           used.add(key);
@@ -145,10 +167,20 @@ const [showGradeSelect, setShowGradeSelect] = useState(!currentChild?.grade);
         }
       }
 
-      // fallback (should be rare)
-      const fallback = pool[Math.floor(Math.random() * pool.length)];
-      return fallback;
+      return pool[0];
     };
+
+    const updatedWords = currentWordSet.words.map((w, i) =>
+      selectedWordIndexes.includes(i) ? pickNext() : w
+    );
+
+    setCurrentWordSet({
+      ...currentWordSet,
+      words: updatedWords,
+    });
+
+    setSelectedWordIndexes([]);
+  };
 
     selectedWordIndexes
       .slice()

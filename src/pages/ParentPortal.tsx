@@ -4,8 +4,9 @@ import { useGame } from '@/contexts/GameContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { GradeSelector } from '@/components/GradeSelector';
-import { GradeLevel } from '@/types';
+import { GradeLevel, Word } from '@/types';
 import { Lock, Plus, Trash2, Edit3, Play } from 'lucide-react';
+import { addCustomWord, listCustomWords, removeCustomWord } from '@/data/wordBank';
 
 export default function ParentPortal() {
   const navigate = useNavigate();
@@ -30,6 +31,30 @@ export default function ParentPortal() {
   const [newGrade, setNewGrade] = useState<GradeLevel | null>(null);
 
   const [error, setError] = useState<string | null>(null);
+
+  // Custom words
+  const [customWordText, setCustomWordText] = useState('');
+  const [customWordGrade, setCustomWordGrade] = useState<GradeLevel>('1');
+  const [customWords, setCustomWords] = useState<Word[]>(() => listCustomWords());
+
+  const refreshCustomWords = () => setCustomWords(listCustomWords());
+
+  const handleAddCustomWord = () => {
+    const created = addCustomWord(customWordText, customWordGrade);
+    if (!created) {
+      setError('Could not add that word. Make sure it is letters only and not already in the bank for that grade.');
+      return;
+    }
+    setError(null);
+    setCustomWordText('');
+    refreshCustomWords();
+  };
+
+  const handleRemoveCustomWord = (id: string) => {
+    removeCustomWord(id);
+    refreshCustomWords();
+  };
+
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingName, setEditingName] = useState('');
   const [editingGrade, setEditingGrade] = useState<GradeLevel | null>(null);
@@ -254,6 +279,69 @@ export default function ParentPortal() {
                 </p>
               )}
             </div>
+
+            
+            {/* Custom words */}
+            <div className="bg-card rounded-3xl shadow-card p-6 mb-6">
+              <h2 className="text-xl font-bold mb-2">Custom Words</h2>
+              <p className="text-sm text-muted-foreground mb-4">
+                Add your own words to the practice bank by grade. These words will appear in random word sets and rerolls.
+              </p>
+
+              <div className="space-y-3">
+                <div>
+                  <label className="text-sm font-medium text-muted-foreground">Word</label>
+                  <Input
+                    value={customWordText}
+                    onChange={(e) => setCustomWordText(e.target.value)}
+                    placeholder="e.g., volcano"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-sm font-medium text-muted-foreground block mb-2">Grade</label>
+                  <GradeSelector selectedGrade={customWordGrade} onSelect={setCustomWordGrade} />
+                </div>
+
+                <Button variant="kid" className="w-full gap-2" onClick={handleAddCustomWord}>
+                  <Plus className="h-5 w-5" />
+                  Add Custom Word
+                </Button>
+
+                {customWords.length > 0 ? (
+                  <div className="mt-4">
+                    <div className="text-sm font-semibold mb-2">Saved Custom Words</div>
+                    <div className="space-y-2 max-h-56 overflow-auto pr-1">
+                      {customWords
+                        .slice()
+                        .sort((a, b) => (a.grade === b.grade ? a.word.localeCompare(b.word) : String(a.grade).localeCompare(String(b.grade))))
+                        .map((w) => (
+                          <div
+                            key={w.id}
+                            className="flex items-center justify-between gap-2 border border-border rounded-2xl px-3 py-2"
+                          >
+                            <div className="text-sm">
+                              <span className="font-semibold">{w.word}</span>
+                              <span className="text-muted-foreground"> • {w.grade === 'K' ? 'K' : `Grade ${w.grade}`}</span>
+                            </div>
+                            <Button
+                              variant="ghost"
+                              size="icon-sm"
+                              onClick={() => handleRemoveCustomWord(w.id)}
+                              aria-label="Delete custom word"
+                            >
+                              <Trash2 className="h-4 w-4 text-destructive" />
+                            </Button>
+                          </div>
+                        ))}
+                    </div>
+                  </div>
+                ) : (
+                  <p className="text-sm text-muted-foreground mt-3">No custom words yet.</p>
+                )}
+              </div>
+            </div>
+
 
             <div className="mt-6 text-center">
               <Button variant="outline" onClick={() => navigate('/play')} className="gap-2">
