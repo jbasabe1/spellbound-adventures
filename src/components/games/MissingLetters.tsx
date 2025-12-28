@@ -133,10 +133,8 @@ export function MissingLetters({ onComplete }: MissingLettersProps) {
         <p className="text-muted-foreground text-center mb-6">
           Type the letters that replace the blanks (in order).
         </p>
-
-
-        <div className=\"flex justify-center mb-4\">
-<Button
+        <div className="flex justify-center mb-4">
+          <Button
             variant="kid"
             size="sm"
             onClick={() => currentWord && speakWord(currentWord.word)}

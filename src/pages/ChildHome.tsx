@@ -182,17 +182,6 @@ const [showGradeSelect, setShowGradeSelect] = useState(!currentChild?.grade);
     setSelectedWordIndexes([]);
   };
 
-    selectedWordIndexes
-      .slice()
-      .sort((a, b) => a - b)
-      .forEach(i => {
-        nextWords[i] = pickNext();
-      });
-
-    setCurrentWordSet({ ...currentWordSet, words: nextWords });
-    setSelectedWordIndexes([]);
-  };
-
   const handleSaveList = () => {
     if (!listName.trim()) {
       toast({ title: 'Please enter a name for your list', variant: 'destructive' });
