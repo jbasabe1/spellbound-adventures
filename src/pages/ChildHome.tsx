@@ -15,13 +15,24 @@ export default function ChildHome() {
     currentWordSet,
     setCurrentChild,
     createRandomWordSet,
-    setCurrentWordSet
+    setCurrentWordSet,
+    startGame
   } = useGame();
 
   const [showGradeSelect, setShowGradeSelect] = useState(!currentChild?.grade);
   const [selectedWordIndexes, setSelectedWordIndexes] = useState<number[]>([]);
 
-  // ensure we always have a practice set for the selected grade
+    // Default grade is Grade 1 unless the player has changed it
+  useEffect(() => {
+    if (!currentChild) return;
+    if (!currentChild.grade) {
+      setCurrentChild({ ...currentChild, grade: '1' });
+      setShowGradeSelect(false);
+      setSelectedWordIndexes([]);
+    }
+  }, [currentChild]);
+
+// ensure we always have a practice set for the selected grade
   useEffect(() => {
     if (!currentChild?.grade) return;
 
@@ -50,11 +61,29 @@ export default function ChildHome() {
   };
 
   const handleQuickPlay = () => {
-    if (currentChild) {
-      const wordSet = currentWordSet || createRandomWordSet(currentChild.grade, 10);
-      setCurrentWordSet(wordSet);
-      navigate('/games');
-    }
+    if (!currentChild) return;
+
+    const grade: GradeLevel = (currentChild.grade || '1') as GradeLevel;
+
+    // Randomize a fresh 10-word set FROM THE CURRENT GRADE ONLY
+    const wordSet = createRandomWordSet(grade, 10);
+
+    // Randomly pick one of the available game modes
+    const quickPlayModes = [
+      'hear-and-type',
+      'letter-tiles',
+      'multiple-choice',
+      'word-scramble',
+      'practice-ladder',
+      'missing-letters',
+      'audio-match',
+      'word-search',
+    ] as const;
+    const mode = quickPlayModes[Math.floor(Math.random() * quickPlayModes.length)];
+
+    // Start game using this word set (prevents stale state timing issues)
+    startGame(mode, wordSet);
+    navigate(`/games/${mode}`);
   };
 
   const toggleWordIndex = (index: number) => {
