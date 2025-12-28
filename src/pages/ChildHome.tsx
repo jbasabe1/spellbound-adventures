@@ -124,7 +124,7 @@ export default function ChildHome() {
   }
 
   return (
-    <div className="min-h-screen pt-20 pb-40 px-4 bg-gradient-to-b from-town-sky to-background">
+    <div className="min-h-screen pt-20 pb-8 px-4 bg-gradient-to-b from-town-sky to-background">
       <div className="max-w-lg mx-auto">
         {/* Welcome Header */}
         <div className="text-center mb-8 animate-slide-up">
@@ -226,9 +226,9 @@ export default function ChildHome() {
       </div>
 
       {/* Bottom Word Bar */}
-      <div className="fixed left-0 right-0 bottom-0 pb-4 px-4">
-        <div className="max-w-lg mx-auto bg-card/95 backdrop-blur rounded-3xl shadow-card p-4 border">
-          <div className="flex items-center justify-between gap-3 mb-3">
+      <div className="mt-6 pb-6">
+        <div className="bg-card rounded-3xl shadow-card p-3 border">
+          <div className="flex items-center justify-between gap-3 mb-2">
             <div>
               <h3 className="font-bold">Current Practice Words</h3>
               <p className="text-xs text-muted-foreground">
@@ -277,6 +277,7 @@ export default function ChildHome() {
             </div>
           )}
         </div>
+
       </div>
     </div>
   );
