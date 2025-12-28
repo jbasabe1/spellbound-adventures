@@ -80,6 +80,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
   const [attempts, setAttempts] = useState(0);
   const [showAnswer, setShowAnswer] = useState(false);
   const [sessionAttempts, setSessionAttempts] = useState<WordAttempt[]>([]);
+  const sessionAttemptsRef = useRef<WordAttempt[]>([]);
   const [ownedItems, setOwnedItems] = useState<OwnedItem[]>([]);
   const [roomPlacements, setRoomPlacements] = useState<ItemPlacement[]>([]);
 
@@ -126,6 +127,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
     setAttempts(0);
     setShowAnswer(false);
     setSessionAttempts([]);
+    sessionAttemptsRef.current = [];
     
     const session: GameSession = {
       id: `session-${Date.now()}`,
@@ -158,7 +160,8 @@ export function GameProvider({ children }: { children: ReactNode }) {
         timeSpent: 0,
         answer: normalizedAnswer,
       };
-      setSessionAttempts(prev => [...prev, attempt]);
+      sessionAttemptsRef.current = [...sessionAttemptsRef.current, attempt];
+      setSessionAttempts(sessionAttemptsRef.current);
       setAttempts(0);
       setShowAnswer(false);
       return { correct: true, shouldShowAnswer: false };
@@ -207,7 +210,8 @@ export function GameProvider({ children }: { children: ReactNode }) {
       accuracy,
       coinsEarned,
       xpEarned,
-      attempts: sessionAttempts,
+      attempts: finalAttempts,
+      totalWords,
     };
     
     // Award coins and XP
@@ -219,8 +223,34 @@ export function GameProvider({ children }: { children: ReactNode }) {
     setCurrentSession(null);
     setCurrentGameMode(null);
     setSessionAttempts([]);
+    sessionAttemptsRef.current = [];
     
     return completedSession;
+  };
+
+  const updateCurrentChild = (updater: (prev: ChildProfile) => ChildProfile) => {
+    setCurrentChildState(prev => {
+      if (!prev) return prev;
+      const next = updater(prev);
+      setChildSaves(saves => {
+        const existing = saves[next.id];
+        const nextSave: ChildSaveData = existing
+          ? { ...existing, profile: next }
+          : { profile: next, ownedItems: [], roomPlacements: [], savedWordSets: [] };
+        return { ...saves, [next.id]: nextSave };
+      });
+      return next;
+    });
+  };
+
+  const applyRewards = (coins: number, xp: number) => {
+    updateCurrentChild(prev => {
+      const xpPerLevel = 100;
+      const newCoins = prev.coins + coins;
+      const newXp = prev.xp + xp;
+      const newLevel = Math.floor(newXp / xpPerLevel) + 1;
+      return { ...prev, coins: newCoins, xp: newXp, level: newLevel };
+    });
   };
 
   const addCoins = (amount: number) => {
