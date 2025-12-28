@@ -17,16 +17,16 @@ import { GameSession } from '@/types';
 export default function GamePlay() {
   const { mode } = useParams<{ mode: string }>();
   const navigate = useNavigate();
-  const { currentWordSet, endGame, startGame, currentGameMode } = useGame();
-    useEffect(() => {
+  const { currentWordSet, endGame, startGame, currentGameMode, currentChild } = useGame();
+  const [completedSession, setCompletedSession] = useState<GameSession | null>(null);
+
+  useEffect(() => {
     if (!currentChild) navigate('/parent', { replace: true });
   }, [currentChild, navigate]);
 
   if (!currentChild) {
     return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
   }
-
-const [completedSession, setCompletedSession] = useState<GameSession | null>(null);
 
   const handleComplete = () => {
     const session = endGame();

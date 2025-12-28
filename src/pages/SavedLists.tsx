@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useGame } from '@/contexts/GameContext';
 import { Button } from '@/components/ui/button';
@@ -5,9 +6,9 @@ import { ArrowLeft, Trash2, Play, BookOpen } from 'lucide-react';
 
 export default function SavedLists() {
   const navigate = useNavigate();
-  const { savedWordSets, loadSavedWordSet, deleteSavedWordSet } = useGame();
+  const { savedWordSets, loadSavedWordSet, deleteSavedWordSet, currentChild } = useGame();
 
-    useEffect(() => {
+  useEffect(() => {
     if (!currentChild) navigate('/parent', { replace: true });
   }, [currentChild, navigate]);
 
