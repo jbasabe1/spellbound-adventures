@@ -47,7 +47,7 @@ export interface SavedWordSet {
   name: string;
   grade: GradeLevel;
   words: Word[];
-  savedAt: Date;
+  createdAt: Date;
 }
 
 // Mastery state for a word
@@ -81,9 +81,10 @@ export interface GameSession {
   wordSetId: string;
   gameMode: GameMode;
   startedAt: Date;
-  completedAt?: Date;
+  endedAt?: Date;
   score: number;
   accuracy: number;
+  totalWords?: number;
   coinsEarned: number;
   xpEarned: number;
   attempts: WordAttempt[];
@@ -162,9 +163,8 @@ export interface InventoryItem {
 // Owned item
 export interface OwnedItem {
   itemId: string;
-  childId: string;
-  acquiredAt: Date;
   equipped: boolean;
+  purchasedAt: Date;
 }
 
 // Room layout

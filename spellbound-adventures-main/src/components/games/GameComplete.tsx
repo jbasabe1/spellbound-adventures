@@ -32,8 +32,8 @@ export function GameComplete({ session, onPlayAgain }: GameCompleteProps) {
   };
 
   const performance = getPerformanceMessage();
-  const correctWords = session.attempts.filter(a => a.correct && a.attempts === 1).length;
-  const totalWords = session.attempts.length;
+  const totalWords = session.totalWords ?? session.attempts.length;
+  const correctWords = session.score ?? session.attempts.filter(a => a.correct).length;
 
   return (
     <div className="max-w-lg mx-auto p-4 sm:p-6 animate-fade-in">
