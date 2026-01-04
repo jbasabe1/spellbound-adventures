@@ -51,9 +51,7 @@ export default function ParentPortal() {
 
     const cap = getGradeLetterCap(customWordGrade);
     if (cap !== null && normalized.length > cap) {
-      setWarning(
-        `Note: "${normalized}" is ${normalized.length} letters. Typical max for grade ${customWordGrade === 'K' ? 'K' : customWordGrade} is ${cap}. It will still be saved and used in games.`
-      );
+      setWarning(`Note: "${normalized}" is ${normalized.length} letters. Typical max for Grade ${customWordGrade === 'K' ? 'K' : customWordGrade} is ${cap}. It will still be saved to this grade and can appear in games.`);
     } else {
       setWarning(null);
     }
@@ -336,6 +334,12 @@ export default function ParentPortal() {
                   <Plus className="h-5 w-5" />
                   Add Custom Word
                 </Button>
+
+                {warning && (
+                  <div className="bg-amber-50 text-amber-700 rounded-2xl p-3 text-sm">
+                    {warning}
+                  </div>
+                )}
 
                 {customWords.length > 0 ? (
                   <div className="mt-4">
