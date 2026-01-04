@@ -1406,22 +1406,20 @@ const gradeLetterCaps: Record<GradeLevel, number | null> = {
   '5': null, // No cap for grade 5
 };
 
+export const getGradeLetterCap = (grade: GradeLevel) => gradeLetterCaps[grade];
+
 export const getWordsByGrade = (grade: GradeLevel): Word[] => {
   const letterCap = gradeLetterCaps[grade];
   
-  // Filter base words by grade AND letter cap
+  // Filter base words by grade AND letter cap (applies to built-in bank only)
   const base = wordBank.filter(w => {
     if (w.grade !== grade) return false;
     if (letterCap !== null && w.word.length > letterCap) return false;
     return true;
   });
   
-  // Filter custom words by grade AND letter cap
-  const custom = listCustomWords().filter(w => {
-    if (w.grade !== grade) return false;
-    if (letterCap !== null && w.word.length > letterCap) return false;
-    return true;
-  });
+  // Custom words should ignore letter caps (parents may add longer words for a grade)
+  const custom = listCustomWords().filter(w => w.grade === grade);
 
   const seen = new Set<string>();
   const merged: Word[] = [];

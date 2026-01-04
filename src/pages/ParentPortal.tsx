@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { GradeSelector } from '@/components/GradeSelector';
 import { GradeLevel, Word } from '@/types';
 import { Lock, Plus, Trash2, Edit3, Play } from 'lucide-react';
-import { addCustomWord, getWordsByGrade, listCustomWords, removeCustomWord } from '@/data/wordBank';
+import { addCustomWord, getGradeLetterCap, getWordsByGrade, listCustomWords, removeCustomWord } from '@/data/wordBank';
 
 export default function ParentPortal() {
   const navigate = useNavigate();
@@ -31,6 +31,7 @@ export default function ParentPortal() {
   const [newGrade, setNewGrade] = useState<GradeLevel | null>(null);
 
   const [error, setError] = useState<string | null>(null);
+  const [warning, setWarning] = useState<string | null>(null);
 
   // Custom words
   const [customWordText, setCustomWordText] = useState('');
@@ -42,10 +43,20 @@ export default function ParentPortal() {
   const handleAddCustomWord = () => {
     if (!customWordGrade) {
       setError('Pick a grade first.');
+      setWarning(null);
       return;
     }
 
     const normalized = customWordText.trim().toLowerCase();
+
+    const cap = getGradeLetterCap(customWordGrade);
+    if (cap !== null && normalized.length > cap) {
+      setWarning(
+        `Note: "${normalized}" is ${normalized.length} letters. Typical max for grade ${customWordGrade === 'K' ? 'K' : customWordGrade} is ${cap}. It will still be saved and used in games.`
+      );
+    } else {
+      setWarning(null);
+    }
     const existsInBase = getWordsByGrade(customWordGrade).some(w => w.word.toLowerCase() === normalized);
     const existsInCustom = customWords.some(
       w => w.grade === customWordGrade && w.word.toLowerCase() === normalized
@@ -53,12 +64,14 @@ export default function ParentPortal() {
 
     if (existsInBase || existsInCustom) {
       setError('That word is already in the word bank for this grade.');
+      setWarning(null);
       return;
     }
 
     const created = addCustomWord(customWordText, customWordGrade);
     if (!created) {
       setError('Could not add that word. Make sure it is letters only and not already in the bank for that grade.');
+      setWarning(null);
       return;
     }
     setError(null);
