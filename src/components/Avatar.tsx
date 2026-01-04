@@ -158,6 +158,46 @@ export function Avatar({ config, size = 'md', className = '' }: AvatarProps) {
             <line x1="48" y1="45" x2="52" y2="45" stroke="#333" strokeWidth="2" />
           </>
         )}
+        
+        {/* Hair Bow / Ribbon */}
+        {config.accessories.includes('bow') && (
+          <>
+            <ellipse cx="72" cy="22" rx="8" ry="5" fill="#FF69B4" />
+            <ellipse cx="82" cy="22" rx="8" ry="5" fill="#FF69B4" />
+            <circle cx="77" cy="22" r="4" fill="#FF1493" />
+          </>
+        )}
+        
+        {/* Party Hat */}
+        {config.accessories.includes('hat') && (
+          <>
+            <polygon points="50,0 35,25 65,25" fill="#9B59B6" />
+            <circle cx="50" cy="2" r="4" fill="#F1C40F" />
+            <line x1="38" y1="22" x2="62" y2="22" stroke="#E74C3C" strokeWidth="3" />
+          </>
+        )}
+        
+        {/* Royal Crown */}
+        {config.accessories.includes('crown') && (
+          <>
+            <polygon points="30,20 35,8 42,18 50,5 58,18 65,8 70,20" fill="#FFD700" />
+            <rect x="30" y="20" width="40" height="8" fill="#FFD700" />
+            <circle cx="35" cy="10" r="2" fill="#E74C3C" />
+            <circle cx="50" cy="7" r="2" fill="#3498DB" />
+            <circle cx="65" cy="10" r="2" fill="#2ECC71" />
+          </>
+        )}
+        
+        {/* Headphones */}
+        {config.accessories.includes('headphones') && (
+          <>
+            <path d="M 22 45 Q 22 15 50 12 Q 78 15 78 45" fill="none" stroke="#333" strokeWidth="4" />
+            <ellipse cx="22" cy="50" rx="6" ry="10" fill="#333" />
+            <ellipse cx="78" cy="50" rx="6" ry="10" fill="#333" />
+            <ellipse cx="22" cy="50" rx="4" ry="7" fill="#666" />
+            <ellipse cx="78" cy="50" rx="4" ry="7" fill="#666" />
+          </>
+        )}
       </svg>
     </div>
   );
