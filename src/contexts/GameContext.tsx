@@ -84,20 +84,22 @@ const createBlankProfile = (name: string, grade: GradeLevel = '1'): ChildProfile
   name: name.trim() || 'Player',
   grade,
   avatarConfig: {
-    skinTone: 'medium',
+    gender: 'male',
+    skinTone: '#FFDBB4',
     hairStyle: 'short',
-    hairColor: 'brown',
+    hairColor: '#4A3728',
     eyeShape: 'round',
-    eyeColor: 'brown',
-    noseShape: 'button',
+    eyeColor: '#4A3728',
+    noseShape: 'small',
     mouthShape: 'smile',
     headShape: 'round',
+    bodyType: 'normal',
     shirt: 'tshirt',
-    shirtColor: 'blue',
+    shirtColor: '#4ECDC4',
     pants: 'jeans',
-    pantsColor: 'blue',
+    pantsColor: '#3B5998',
     shoes: 'sneakers',
-    shoesColor: 'white',
+    shoesColor: '#FFFFFF',
     accessories: [],
   },
   xp: 0,
@@ -125,8 +127,34 @@ function reviveChildSaves(raw: Record<string, any>): Record<string, ChildSaveDat
   const result: Record<string, ChildSaveData> = {};
   Object.entries(raw || {}).forEach(([id, v]) => {
     if (!v?.profile) return;
+    // Ensure avatarConfig has gender (for profiles created before gender was added)
+    const avatarConfig = v.profile.avatarConfig || {};
+    if (!avatarConfig.gender) {
+      avatarConfig.gender = 'male';
+    }
+    // Ensure proper color values for existing profiles
+    if (!avatarConfig.skinTone?.startsWith('#')) {
+      avatarConfig.skinTone = '#FFDBB4';
+    }
+    if (!avatarConfig.hairColor?.startsWith('#')) {
+      avatarConfig.hairColor = '#4A3728';
+    }
+    if (!avatarConfig.shirtColor?.startsWith('#')) {
+      avatarConfig.shirtColor = '#4ECDC4';
+    }
+    if (!avatarConfig.pantsColor?.startsWith('#')) {
+      avatarConfig.pantsColor = '#3B5998';
+    }
+    if (!avatarConfig.shoesColor?.startsWith('#')) {
+      avatarConfig.shoesColor = '#FFFFFF';
+    }
+    if (!avatarConfig.eyeColor?.startsWith('#')) {
+      avatarConfig.eyeColor = '#4A3728';
+    }
+    
     const profile: ChildProfile = {
       ...v.profile,
+      avatarConfig,
       createdAt: v.profile.createdAt ? new Date(v.profile.createdAt) : new Date(),
     };
     result[id] = {

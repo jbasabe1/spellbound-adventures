@@ -299,38 +299,48 @@ const [showGradeSelect, setShowGradeSelect] = useState(!currentChild?.grade);
 
   return (
     <div className="min-h-screen pt-20 pb-8 px-4 bg-gradient-to-b from-town-sky to-background">
-      <div className="max-w-lg mx-auto">
-        {/* Welcome Header */}
-        <div className="text-center mb-8 animate-slide-up">
-          <div className="inline-block mb-4">
-            <Avatar config={currentChild.avatarConfig} size="lg" />
-          </div>
-          <h1 className="text-3xl font-bold text-foreground mb-2">
-            Hi, {currentChild.name}! 👋
-          </h1>
-          <p className="text-muted-foreground">Level {currentChild.level} Speller</p>
-
-          {/* XP Progress Bar */}
-          <div className="mt-3 px-4">
-            <div className="flex items-center justify-between text-xs text-muted-foreground mb-1">
-              <span>Level {currentChild.level}</span>
-              <span>{xpToNextLevel} XP to Level {currentChild.level + 1}</span>
+      <div className="max-w-4xl mx-auto">
+        {/* Welcome Header - Side by side layout */}
+        <div className="flex flex-col md:flex-row gap-6 mb-8 animate-slide-up">
+          {/* Avatar on the left */}
+          <div className="flex-shrink-0 flex justify-center md:justify-start">
+            <div className="bg-card/50 rounded-3xl p-4 shadow-soft">
+              <Avatar config={currentChild.avatarConfig} size="xl" />
             </div>
-            <Progress value={xpProgress} className="h-2" />
           </div>
+          
+          {/* Info on the right */}
+          <div className="flex-1 flex flex-col justify-center text-center md:text-left">
+            <h1 className="text-3xl font-bold text-foreground mb-2">
+              Hi, {currentChild.name}! 👋
+            </h1>
+            <p className="text-muted-foreground mb-4">Level {currentChild.level} Speller</p>
 
-          {/* Stats Bar */}
-          <div className="flex justify-center gap-4 mt-4">
-            <div className="flex items-center gap-1.5 bg-xp/20 text-purple-600 px-4 py-2 rounded-full">
-              <Sparkles className="h-5 w-5" />
-              <span className="font-bold">{currentChild.xp} XP</span>
+            {/* XP Progress Bar */}
+            <div className="mb-4">
+              <div className="flex items-center justify-between text-xs text-muted-foreground mb-1">
+                <span>Level {currentChild.level}</span>
+                <span>{xpToNextLevel} XP to Level {currentChild.level + 1}</span>
+              </div>
+              <Progress value={xpProgress} className="h-2" />
             </div>
-            <div className="flex items-center gap-1.5 bg-amber-100 text-amber-600 px-4 py-2 rounded-full">
-              <Coins className="h-5 w-5" />
-              <span className="font-bold">{currentChild.coins}</span>
+
+            {/* Stats Bar */}
+            <div className="flex justify-center md:justify-start gap-4">
+              <div className="flex items-center gap-1.5 bg-xp/20 text-purple-600 px-4 py-2 rounded-full">
+                <Sparkles className="h-5 w-5" />
+                <span className="font-bold">{currentChild.xp} XP</span>
+              </div>
+              <div className="flex items-center gap-1.5 bg-amber-100 text-amber-600 px-4 py-2 rounded-full">
+                <Coins className="h-5 w-5" />
+                <span className="font-bold">{currentChild.coins}</span>
+              </div>
             </div>
           </div>
         </div>
+        
+        {/* Main content container */}
+        <div className="max-w-lg mx-auto">
 
         {/* Grade Selection */}
         {showGradeSelect ? (
@@ -422,6 +432,7 @@ const [showGradeSelect, setShowGradeSelect] = useState(!currentChild?.grade);
             </button>
           </>
         )}
+        </div>
       </div>
 
       {/* Bottom Word Bar */}
