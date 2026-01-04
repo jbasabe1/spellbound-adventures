@@ -122,6 +122,7 @@ export interface ChildProfile {
 
 // Avatar configuration
 export interface AvatarConfig {
+  gender: 'male' | 'female';
   skinTone: string;
   hairStyle: string;
   hairColor: string;
@@ -130,6 +131,7 @@ export interface AvatarConfig {
   noseShape: string;
   mouthShape: string;
   headShape: string;
+  bodyType: string;
   shirt: string;
   shirtColor: string;
   pants: string;
