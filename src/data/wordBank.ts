@@ -1396,9 +1396,32 @@ export function removeCustomWord(id: string) {
   window.localStorage.setItem(CUSTOM_WORDS_STORAGE_KEY, JSON.stringify(next));
 }
 
+// Letter count caps per grade level
+const gradeLetterCaps: Record<GradeLevel, number | null> = {
+  'K': 4,
+  '1': 5,
+  '2': 6,
+  '3': 7,
+  '4': 8,
+  '5': null, // No cap for grade 5
+};
+
 export const getWordsByGrade = (grade: GradeLevel): Word[] => {
-  const base = wordBank.filter(w => w.grade === grade);
-  const custom = listCustomWords().filter(w => w.grade === grade);
+  const letterCap = gradeLetterCaps[grade];
+  
+  // Filter base words by grade AND letter cap
+  const base = wordBank.filter(w => {
+    if (w.grade !== grade) return false;
+    if (letterCap !== null && w.word.length > letterCap) return false;
+    return true;
+  });
+  
+  // Filter custom words by grade AND letter cap
+  const custom = listCustomWords().filter(w => {
+    if (w.grade !== grade) return false;
+    if (letterCap !== null && w.word.length > letterCap) return false;
+    return true;
+  });
 
   const seen = new Set<string>();
   const merged: Word[] = [];
