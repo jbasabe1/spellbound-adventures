@@ -3,6 +3,7 @@ import { useGame } from '@/contexts/GameContext';
 import { Button } from '@/components/ui/button';
 import { CheckCircle, XCircle, RotateCcw, ArrowRight } from 'lucide-react';
 import { Word } from '@/types';
+import { CorrectFeedback } from './CorrectFeedback';
 
 interface WordSearchProps {
   onComplete: () => void;
@@ -50,12 +51,14 @@ export function WordSearch({ onComplete }: WordSearchProps) {
   const [gridInfo, setGridInfo] = useState(() => currentWord ? makeGrid(currentWord.word) : null);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [feedback, setFeedback] = useState<'correct' | 'incorrect' | 'try-again' | 'show-answer' | null>(null);
+  const [showStarPopup, setShowStarPopup] = useState(false);
 
   useEffect(() => {
     if (currentWord) {
       setGridInfo(makeGrid(currentWord.word));
       setSelectedIds([]);
       setFeedback(null);
+      setShowStarPopup(false);
     }
   }, [currentWordIndex, currentWord]);
 
@@ -96,11 +99,13 @@ export function WordSearch({ onComplete }: WordSearchProps) {
 
     if (result.correct) {
       setFeedback('correct');
+      setShowStarPopup(true);
       setTimeout(() => {
         const hasNext = nextWord();
         if (!hasNext) onComplete();
         setSelectedIds([]);
         setFeedback(null);
+        setShowStarPopup(false);
       }, 900);
       return;
     }
@@ -110,7 +115,7 @@ export function WordSearch({ onComplete }: WordSearchProps) {
       return;
     }
 
-    setFeedback('incorrect');
+    setFeedback('try-again');
     setTimeout(() => {
       setFeedback(null);
       setSelectedIds([]);
@@ -128,6 +133,8 @@ export function WordSearch({ onComplete }: WordSearchProps) {
 
   return (
     <div className="max-w-lg mx-auto p-4 sm:p-6">
+      <CorrectFeedback show={showStarPopup} />
+      
       {/* Progress */}
       <div className="mb-6">
         <div className="flex justify-between text-sm text-muted-foreground mb-2">
@@ -185,10 +192,10 @@ export function WordSearch({ onComplete }: WordSearchProps) {
               <span>Correct!</span>
             </div>
           )}
-          {feedback === 'incorrect' && (
+          {feedback === 'try-again' && (
             <div className="flex items-center justify-center gap-2 text-red-600 font-bold">
               <XCircle className="h-6 w-6" />
-              <span>Try again! 🚀</span>
+              <span>Attempt 2 of 2 - Try again! 🚀</span>
             </div>
           )}
         </div>
