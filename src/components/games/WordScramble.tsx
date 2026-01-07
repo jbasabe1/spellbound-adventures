@@ -216,6 +216,7 @@ export function WordScramble({ onComplete }: WordScrambleProps) {
             >
               <Shuffle className="h-5 w-5" />
             </Button>
+          )}
           <Button
             variant="outline"
             size="lg"
@@ -226,7 +227,6 @@ export function WordScramble({ onComplete }: WordScrambleProps) {
             <RotateCcw className="h-5 w-5" />
             Clear
           </Button>
-          )}
         </div>
 
         {/* Instruction */}
