@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Eye, EyeOff, CheckCircle, XCircle, ArrowRight, Volume2 } from 'lucide-react';
 import { Word } from '@/types';
+import { CorrectFeedback } from './CorrectFeedback';
 
 interface PracticeLadderProps {
   onComplete: () => void;
@@ -30,12 +31,14 @@ export function PracticeLadder({ onComplete }: PracticeLadderProps) {
   const [phase, setPhase] = useState<'study' | 'recall'>('study');
   const [input, setInput] = useState('');
   const [feedback, setFeedback] = useState<'correct' | 'incorrect' | 'try-again' | 'show-answer' | null>(null);
+  const [showStarPopup, setShowStarPopup] = useState(false);
 
   useEffect(() => {
     // Reset when word changes
     setPhase('study');
     setInput('');
     setFeedback(null);
+    setShowStarPopup(false);
   }, [currentWordIndex]);
 
   const progress = useMemo(() => {
@@ -59,12 +62,14 @@ export function PracticeLadder({ onComplete }: PracticeLadderProps) {
     const result = submitAnswer(input, currentWord);
     if (result.correct) {
       setFeedback('correct');
+      setShowStarPopup(true);
       setTimeout(() => {
         const hasNext = nextWord();
         if (!hasNext) onComplete();
         setFeedback(null);
         setInput('');
         setPhase('study');
+        setShowStarPopup(false);
       }, 900);
       return;
     }
@@ -74,7 +79,7 @@ export function PracticeLadder({ onComplete }: PracticeLadderProps) {
       return;
     }
 
-    setFeedback('incorrect');
+    setFeedback('try-again');
     setTimeout(() => setFeedback(null), 900);
   };
 
@@ -90,6 +95,8 @@ export function PracticeLadder({ onComplete }: PracticeLadderProps) {
 
   return (
     <div className="max-w-lg mx-auto p-4 sm:p-6">
+      <CorrectFeedback show={showStarPopup} />
+      
       {/* Progress */}
       <div className="mb-6">
         <div className="flex justify-between text-sm text-muted-foreground mb-2">
@@ -121,14 +128,14 @@ export function PracticeLadder({ onComplete }: PracticeLadderProps) {
             </div>
             {currentWord.exampleSentence && (
               <p className="text-muted-foreground mt-2">
-                “{currentWord.exampleSentence}”
+                "{currentWord.exampleSentence}"
               </p>
             )}
 
             <div className="mt-6">
               <Button variant="game" size="xl" onClick={handleStartRecall} className="w-full gap-2">
                 <ArrowRight className="h-6 w-6" />
-                I’m Ready!
+                I'm Ready!
               </Button>
             </div>
           </div>
@@ -145,7 +152,7 @@ export function PracticeLadder({ onComplete }: PracticeLadderProps) {
                   The word is: <span className="underline">{currentWord.word}</span>
                 </p>
                 <p className="text-sm text-center mt-1">
-                  You’ll get it next time — let’s keep going!
+                  You'll get it next time — let's keep going!
                 </p>
               </div>
             )}
@@ -170,10 +177,10 @@ export function PracticeLadder({ onComplete }: PracticeLadderProps) {
                   <span>Correct!</span>
                 </div>
               )}
-              {feedback === 'incorrect' && (
+              {feedback === 'try-again' && (
                 <div className="flex items-center justify-center gap-2 text-red-600 font-bold">
                   <XCircle className="h-6 w-6" />
-                  <span>Try again! 🚀</span>
+                  <span>Attempt 2 of 2 - Try again! 🚀</span>
                 </div>
               )}
             </div>

@@ -3,6 +3,7 @@ import { useGame } from '@/contexts/GameContext';
 import { Button } from '@/components/ui/button';
 import { Volume2, RotateCcw, CheckCircle, XCircle, ArrowRight, Shuffle } from 'lucide-react';
 import { Word } from '@/types';
+import { CorrectFeedback } from './CorrectFeedback';
 
 interface WordScrambleProps {
   onComplete: () => void;
@@ -12,7 +13,6 @@ export function WordScramble({ onComplete }: WordScrambleProps) {
   const { 
     currentWordSet, 
     currentWordIndex, 
-    attempts,
     showAnswer, 
     submitAnswer, 
     nextWord,
@@ -23,6 +23,7 @@ export function WordScramble({ onComplete }: WordScrambleProps) {
   const [userOrder, setUserOrder] = useState<{ letter: string; id: number }[]>([]);
   const [feedback, setFeedback] = useState<'correct' | 'incorrect' | 'try-again' | 'show-answer' | null>(null);
   const [mustTypeCorrect, setMustTypeCorrect] = useState(false);
+  const [showStarPopup, setShowStarPopup] = useState(false);
 
   const currentWord: Word | undefined = currentWordSet?.words[currentWordIndex];
 
@@ -58,10 +59,11 @@ export function WordScramble({ onComplete }: WordScrambleProps) {
       setUserOrder([]);
       setFeedback(null);
       setMustTypeCorrect(false);
+      setShowStarPopup(false);
       const timer = setTimeout(() => handleSpeak(), 500);
       return () => clearTimeout(timer);
     }
-  }, [currentWord, scrambleWord, handleSpeak]);
+  }, [currentWordIndex, currentWord, scrambleWord, handleSpeak]);
 
   const selectLetter = (letterObj: { letter: string; id: number }) => {
     if (feedback) return;
@@ -122,10 +124,12 @@ export function WordScramble({ onComplete }: WordScrambleProps) {
     if (mustTypeCorrect) {
       if (answer.toLowerCase() === currentWord.word.toLowerCase()) {
         setFeedback('correct');
+        setShowStarPopup(true);
         setMustTypeCorrect(false);
         setTimeout(() => {
           const hasMore = nextWord();
           setFeedback(null);
+          setShowStarPopup(false);
           if (!hasMore) {
             onComplete();
           }
@@ -144,9 +148,11 @@ export function WordScramble({ onComplete }: WordScrambleProps) {
 
     if (correct) {
       setFeedback('correct');
+      setShowStarPopup(true);
       setTimeout(() => {
         const hasMore = nextWord();
         setFeedback(null);
+        setShowStarPopup(false);
         if (!hasMore) {
           onComplete();
         }
@@ -161,7 +167,7 @@ export function WordScramble({ onComplete }: WordScrambleProps) {
         setUserOrder([]);
       }, 2000);
     } else {
-      setFeedback('incorrect');
+      setFeedback('try-again');
       setTimeout(() => {
         setFeedback(null);
         // Reset
@@ -180,6 +186,8 @@ export function WordScramble({ onComplete }: WordScrambleProps) {
 
   return (
     <div className="max-w-lg mx-auto p-4 sm:p-6">
+      <CorrectFeedback show={showStarPopup} />
+      
       {/* Progress Bar */}
       <div className="mb-6">
         <div className="flex justify-between text-sm text-muted-foreground mb-2">
@@ -319,10 +327,10 @@ export function WordScramble({ onComplete }: WordScrambleProps) {
           )}
         </Button>
 
-        {/* Attempt Counter */}
-        {attempts > 0 && !showAnswer && (
+        {/* Attempt Counter - only show on first wrong attempt */}
+        {feedback === 'try-again' && !mustTypeCorrect && (
           <p className="text-center text-sm text-muted-foreground mt-4">
-            Try again! 🚀 (Attempt {attempts} of 2)
+            Attempt 2 of 2 - Try again! 🚀
           </p>
         )}
       </div>

@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { CheckCircle, XCircle, ArrowRight, HelpCircle, Volume2 } from 'lucide-react';
 import { Word } from '@/types';
+import { CorrectFeedback } from './CorrectFeedback';
 
 interface MissingLettersProps {
   onComplete: () => void;
@@ -45,6 +46,7 @@ export function MissingLetters({ onComplete }: MissingLettersProps) {
   const [input, setInput] = useState('');
   const [feedback, setFeedback] = useState<'correct' | 'incorrect' | 'try-again' | 'show-answer' | null>(null);
   const [hintShown, setHintShown] = useState(false);
+  const [showStarPopup, setShowStarPopup] = useState(false);
 
   useEffect(() => {
     if (currentWord) {
@@ -52,6 +54,7 @@ export function MissingLetters({ onComplete }: MissingLettersProps) {
       setInput('');
       setFeedback(null);
       setHintShown(false);
+      setShowStarPopup(false);
     }
   }, [currentWordIndex, currentWord]);
 
@@ -74,7 +77,7 @@ export function MissingLetters({ onComplete }: MissingLettersProps) {
     const typedLetters = typed.split('');
 
     if (typedLetters.length !== missingPositions.length) {
-      setFeedback('incorrect');
+      setFeedback('try-again');
       setTimeout(() => setFeedback(null), 900);
       return;
     }
@@ -88,11 +91,13 @@ export function MissingLetters({ onComplete }: MissingLettersProps) {
     const result = submitAnswer(candidate, currentWord);
     if (result.correct) {
       setFeedback('correct');
+      setShowStarPopup(true);
       setTimeout(() => {
         const hasNext = nextWord();
         if (!hasNext) onComplete();
         setFeedback(null);
         setInput('');
+        setShowStarPopup(false);
       }, 900);
       return;
     }
@@ -102,7 +107,7 @@ export function MissingLetters({ onComplete }: MissingLettersProps) {
       return;
     }
 
-    setFeedback('incorrect');
+    setFeedback('try-again');
     setTimeout(() => setFeedback(null), 900);
   };
 
@@ -117,6 +122,8 @@ export function MissingLetters({ onComplete }: MissingLettersProps) {
 
   return (
     <div className="max-w-lg mx-auto p-4 sm:p-6">
+      <CorrectFeedback show={showStarPopup} />
+      
       {/* Progress */}
       <div className="mb-6">
         <div className="flex justify-between text-sm text-muted-foreground mb-2">
@@ -181,10 +188,10 @@ export function MissingLetters({ onComplete }: MissingLettersProps) {
               <span>Correct!</span>
             </div>
           )}
-          {feedback === 'incorrect' && (
+          {feedback === 'try-again' && (
             <div className="flex items-center justify-center gap-2 text-red-600 font-bold">
               <XCircle className="h-6 w-6" />
-              <span>Try again! 🚀</span>
+              <span>Attempt 2 of 2 - Try again! 🚀</span>
             </div>
           )}
         </div>

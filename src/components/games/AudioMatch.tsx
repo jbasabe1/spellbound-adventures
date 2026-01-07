@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useGame } from '@/contexts/GameContext';
 import { Button } from '@/components/ui/button';
-import { Volume2, CheckCircle, XCircle, ArrowRight } from 'lucide-react';
+import { Volume2, CheckCircle, XCircle, ArrowRight, Hand } from 'lucide-react';
 import { Word } from '@/types';
+import { CorrectFeedback } from './CorrectFeedback';
 
 interface AudioMatchProps {
   onComplete: () => void;
@@ -30,7 +31,10 @@ export function AudioMatch({ onComplete }: AudioMatchProps) {
   const currentWord: Word | undefined = currentWordSet?.words[currentWordIndex];
 
   const [choices, setChoices] = useState<string[]>([]);
+  const [selectedChoice, setSelectedChoice] = useState<string | null>(null);
   const [feedback, setFeedback] = useState<'correct' | 'incorrect' | 'try-again' | 'show-answer' | null>(null);
+  const [mustSelectCorrect, setMustSelectCorrect] = useState(false);
+  const [showStarPopup, setShowStarPopup] = useState(false);
 
   const progress = useMemo(() => {
     if (!currentWordSet) return 0;
@@ -50,6 +54,9 @@ export function AudioMatch({ onComplete }: AudioMatchProps) {
 
   useEffect(() => {
     setFeedback(null);
+    setSelectedChoice(null);
+    setMustSelectCorrect(false);
+    setShowStarPopup(false);
     buildChoices();
     // auto-play word shortly
     const t = setTimeout(() => {
@@ -63,38 +70,71 @@ export function AudioMatch({ onComplete }: AudioMatchProps) {
   };
 
   const handlePick = (choice: string) => {
-    if (!currentWord || feedback) return;
+    if (!currentWord || (feedback && !mustSelectCorrect)) return;
+
+    setSelectedChoice(choice);
+
+    if (mustSelectCorrect) {
+      if (choice.toLowerCase() === currentWord.word.toLowerCase()) {
+        setFeedback('correct');
+        setShowStarPopup(true);
+        setTimeout(() => {
+          const hasNext = nextWord();
+          if (!hasNext) onComplete();
+          setFeedback(null);
+          setShowStarPopup(false);
+        }, 1000);
+      } else {
+        setFeedback('incorrect');
+        setTimeout(() => {
+          setFeedback(null);
+          setSelectedChoice(null);
+        }, 500);
+      }
+      return;
+    }
 
     const result = submitAnswer(choice, currentWord);
     if (result.correct) {
       setFeedback('correct');
+      setShowStarPopup(true);
       setTimeout(() => {
         const hasNext = nextWord();
         if (!hasNext) onComplete();
         setFeedback(null);
-      }, 850);
+        setShowStarPopup(false);
+      }, 1000);
       return;
     }
 
     if (result.shouldShowAnswer) {
       setFeedback('show-answer');
+      setMustSelectCorrect(true);
+      speakWord(currentWord.word);
       return;
     }
 
-    setFeedback('incorrect');
-    setTimeout(() => setFeedback(null), 850);
+    setFeedback('try-again');
+    setTimeout(() => {
+      setFeedback(null);
+      setSelectedChoice(null);
+    }, 850);
   };
 
   const handleContinueAfterAnswer = () => {
     const hasNext = nextWord();
     if (!hasNext) onComplete();
     setFeedback(null);
+    setSelectedChoice(null);
+    setMustSelectCorrect(false);
   };
 
   if (!currentWord) return <div className="text-center p-8">Loading...</div>;
 
   return (
     <div className="max-w-lg mx-auto p-4 sm:p-6">
+      <CorrectFeedback show={showStarPopup} />
+      
       {/* Progress */}
       <div className="mb-6">
         <div className="flex justify-between text-sm text-muted-foreground mb-2">
@@ -117,25 +157,49 @@ export function AudioMatch({ onComplete }: AudioMatchProps) {
           </Button>
         </div>
 
-        {showAnswer && feedback === 'show-answer' && (
+        {showAnswer && (feedback === 'show-answer' || mustSelectCorrect) && (
           <div className="bg-amber-100 text-amber-800 rounded-2xl p-4 mb-5 text-center">
             Answer: <span className="font-bold underline">{currentWord.word}</span>
+            <p className="text-sm mt-1">Tap the correct answer to continue!</p>
           </div>
         )}
 
         <div className="grid gap-3">
-          {choices.map((c) => (
-            <button
-              key={c}
-              onClick={() => handlePick(c)}
-              disabled={!!feedback}
-              className="w-full bg-background rounded-2xl p-4 border border-border
-                         hover:shadow-soft transition-all active:scale-[0.98]
-                         text-lg font-semibold text-foreground text-center"
-            >
-              {c}
-            </button>
-          ))}
+          {choices.map((c) => {
+            const isCorrect = c.toLowerCase() === currentWord.word.toLowerCase();
+            const isSelected = selectedChoice === c;
+            const showCorrectStyle = feedback === 'correct' && isCorrect;
+            const showWrongStyle = isSelected && (feedback === 'incorrect' || feedback === 'try-again');
+            const showPointer = mustSelectCorrect && isCorrect && feedback !== 'correct';
+            
+            return (
+              <button
+                key={c}
+                onClick={() => handlePick(c)}
+                disabled={feedback === 'correct'}
+                className={`relative w-full rounded-2xl p-4 border transition-all active:scale-[0.98]
+                           text-lg font-semibold text-center ${
+                  showCorrectStyle
+                    ? 'bg-success/20 border-success text-success'
+                    : showWrongStyle
+                    ? 'bg-destructive/20 border-destructive text-destructive'
+                    : 'bg-background border-border hover:shadow-soft text-foreground'
+                }`}
+              >
+                {/* Pointing finger for correct answer after 2 wrong attempts */}
+                {showPointer && (
+                  <div className="absolute -left-8 top-1/2 -translate-y-1/2 animate-bounce">
+                    <Hand className="h-6 w-6 text-amber-500 rotate-90" />
+                  </div>
+                )}
+                <span className="flex items-center justify-center gap-2">
+                  {c}
+                  {showCorrectStyle && <CheckCircle className="h-5 w-5" />}
+                  {showWrongStyle && <XCircle className="h-5 w-5" />}
+                </span>
+              </button>
+            );
+          })}
         </div>
 
         <div className="mt-5">
@@ -145,21 +209,13 @@ export function AudioMatch({ onComplete }: AudioMatchProps) {
               <span>Correct!</span>
             </div>
           )}
-          {feedback === 'incorrect' && (
+          {feedback === 'try-again' && (
             <div className="flex items-center justify-center gap-2 text-red-600 font-bold">
               <XCircle className="h-6 w-6" />
-              <span>Try again! 🚀</span>
+              <span>Attempt 2 of 2 - Try again! 🚀</span>
             </div>
           )}
         </div>
-
-        {showAnswer && feedback === 'show-answer' && (
-          <div className="mt-6">
-            <Button variant="game" size="lg" className="w-full" onClick={handleContinueAfterAnswer}>
-              Continue <ArrowRight className="ml-2 h-5 w-5" />
-            </Button>
-          </div>
-        )}
       </div>
     </div>
   );

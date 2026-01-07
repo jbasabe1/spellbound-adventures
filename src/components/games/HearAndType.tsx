@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Volume2, RotateCcw, HelpCircle, CheckCircle, XCircle, ArrowRight } from 'lucide-react';
 import { Word } from '@/types';
+import { CorrectFeedback } from './CorrectFeedback';
 
 interface HearAndTypeProps {
   onComplete: () => void;
@@ -13,7 +14,6 @@ export function HearAndType({ onComplete }: HearAndTypeProps) {
   const { 
     currentWordSet, 
     currentWordIndex, 
-    attempts, 
     showAnswer, 
     submitAnswer, 
     nextWord,
@@ -24,6 +24,7 @@ export function HearAndType({ onComplete }: HearAndTypeProps) {
   const [feedback, setFeedback] = useState<'correct' | 'incorrect' | 'try-again' | 'show-answer' | null>(null);
   const [showHint, setShowHint] = useState(false);
   const [mustTypeCorrect, setMustTypeCorrect] = useState(false);
+  const [showStarPopup, setShowStarPopup] = useState(false);
 
   const currentWord: Word | undefined = currentWordSet?.words[currentWordIndex];
 
@@ -40,12 +41,19 @@ export function HearAndType({ onComplete }: HearAndTypeProps) {
   };
 
   useEffect(() => {
+    // Reset state when word changes
+    setFeedback(null);
+    setShowHint(false);
+    setMustTypeCorrect(false);
+    setInput('');
+    setShowStarPopup(false);
+    
     // Speak the word when it changes
     if (currentWord && !showAnswer) {
       const timer = setTimeout(() => handleSpeak(), 500);
       return () => clearTimeout(timer);
     }
-  }, [currentWord, showAnswer, handleSpeak]);
+  }, [currentWordIndex, currentWord, showAnswer, handleSpeak]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -55,12 +63,14 @@ export function HearAndType({ onComplete }: HearAndTypeProps) {
       // Check if they typed the correct answer
       if (input.toLowerCase().trim() === currentWord.word.toLowerCase()) {
         setFeedback('correct');
+        setShowStarPopup(true);
         setMustTypeCorrect(false);
         setTimeout(() => {
           const hasMore = nextWord();
           setInput('');
           setFeedback(null);
           setShowHint(false);
+          setShowStarPopup(false);
           if (!hasMore) {
             onComplete();
           }
@@ -77,11 +87,13 @@ export function HearAndType({ onComplete }: HearAndTypeProps) {
 
     if (correct) {
       setFeedback('correct');
+      setShowStarPopup(true);
       setTimeout(() => {
         const hasMore = nextWord();
         setInput('');
         setFeedback(null);
         setShowHint(false);
+        setShowStarPopup(false);
         if (!hasMore) {
           onComplete();
         }
@@ -96,11 +108,6 @@ export function HearAndType({ onComplete }: HearAndTypeProps) {
     }
   };
 
-  const handleContinue = () => {
-    setInput('');
-    setMustTypeCorrect(true);
-  };
-
   if (!currentWord) {
     return <div className="text-center p-8">Loading...</div>;
   }
@@ -109,6 +116,8 @@ export function HearAndType({ onComplete }: HearAndTypeProps) {
 
   return (
     <div className="max-w-lg mx-auto p-4 sm:p-6">
+      <CorrectFeedback show={showStarPopup} />
+      
       {/* Progress Bar */}
       <div className="mb-6">
         <div className="flex justify-between text-sm text-muted-foreground mb-2">
@@ -234,10 +243,10 @@ export function HearAndType({ onComplete }: HearAndTypeProps) {
           </Button>
         </form>
 
-        {/* Attempt Counter */}
-        {attempts > 0 && !showAnswer && (
+        {/* Attempt Counter - only show on first wrong attempt */}
+        {feedback === 'try-again' && (
           <p className="text-center text-sm text-muted-foreground mt-4">
-            Attempt {attempts} of 2 - Try again! 🚀
+            Attempt 2 of 2 - Try again! 🚀
           </p>
         )}
       </div>
