@@ -29,7 +29,7 @@ export function PracticeLadder({ onComplete }: PracticeLadderProps) {
 
   const [phase, setPhase] = useState<'study' | 'recall'>('study');
   const [input, setInput] = useState('');
-  const [feedback, setFeedback] = useState<'correct' | 'incorrect' | 'show-answer' | null>(null);
+  const [feedback, setFeedback] = useState<'correct' | 'incorrect' | 'try-again' | 'show-answer' | null>(null);
 
   useEffect(() => {
     // Reset when word changes
@@ -173,7 +173,7 @@ export function PracticeLadder({ onComplete }: PracticeLadderProps) {
               {feedback === 'incorrect' && (
                 <div className="flex items-center justify-center gap-2 text-red-600 font-bold">
                   <XCircle className="h-6 w-6" />
-                  <span>Try again!</span>
+                  <span>Try again! 🚀</span>
                 </div>
               )}
             </div>

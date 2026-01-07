@@ -60,7 +60,7 @@ interface GameContextType extends GameState {
   createCustomWordSet: (name: string, words: Word[], grade: GradeLevel) => WordSet;
   setCurrentWordSet: (wordSet: WordSet | null) => void;
   startGame: (mode: GameMode, wordSetOverride?: WordSet) => void;
-  submitAnswer: (answer: string, word: Word) => { correct: boolean; shouldShowAnswer: boolean };
+  submitAnswer: (answer: string, word: Word) => { correct: boolean; shouldShowAnswer: boolean; attempts: number };
   nextWord: () => boolean;
   endGame: () => GameSession | null;
   addCoins: (amount: number) => void;
@@ -386,8 +386,39 @@ export function GameProvider({ children }: { children: ReactNode }) {
     const newAttempts = attempts + 1;
     setAttempts(newAttempts);
 
+    // Ensure we keep ONE attempt record per word (so totals/accuracy are consistent)
+    const upsertAttempt = (attempt: WordAttempt) => {
+      const idx = sessionAttemptsRef.current.findIndex(a => a.wordId === attempt.wordId);
+      if (idx >= 0) {
+        sessionAttemptsRef.current = sessionAttemptsRef.current.map((a, i) => (i === idx ? attempt : a));
+      } else {
+        sessionAttemptsRef.current = [...sessionAttemptsRef.current, attempt];
+      }
+      setSessionAttempts(sessionAttemptsRef.current);
+    };
+
+    // If the answer is currently being shown (after 2 mistakes),
+    // the child must type the correct spelling to continue, but it should still count as wrong.
+    if (isCorrect && showAnswer) {
+      // If we haven't already recorded this word as wrong, do it now.
+      const existing = sessionAttemptsRef.current.find(a => a.wordId === word.id);
+      if (!existing) {
+        upsertAttempt({
+          wordId: word.id,
+          word: word.word,
+          attempts: newAttempts,
+          correct: false,
+          hintsUsed: 1,
+          timeSpent: 0,
+          answer: normalizedAnswer,
+        });
+      }
+      setShowAnswer(false);
+      return { correct: true, shouldShowAnswer: false, attempts: newAttempts };
+    }
+
     if (isCorrect) {
-      const attempt: WordAttempt = {
+      upsertAttempt({
         wordId: word.id,
         word: word.word,
         attempts: newAttempts,
@@ -395,30 +426,28 @@ export function GameProvider({ children }: { children: ReactNode }) {
         hintsUsed: 0,
         timeSpent: 0,
         answer: normalizedAnswer,
-      };
-      sessionAttemptsRef.current = [...sessionAttemptsRef.current, attempt];
-      setSessionAttempts(sessionAttemptsRef.current);
+      });
       setShowAnswer(false);
-      return { correct: true, shouldShowAnswer: false };
+      return { correct: true, shouldShowAnswer: false, attempts: newAttempts };
     }
 
+    // Wrong answer
     if (newAttempts >= 2) {
-      const attempt: WordAttempt = {
+      // Second mistake: reveal answer and count this word as WRONG (even if they must type it to continue).
+      upsertAttempt({
         wordId: word.id,
         word: word.word,
         attempts: newAttempts,
         correct: false,
-        hintsUsed: 0,
+        hintsUsed: 1,
         timeSpent: 0,
         answer: normalizedAnswer,
-      };
-      sessionAttemptsRef.current = [...sessionAttemptsRef.current, attempt];
-      setSessionAttempts(sessionAttemptsRef.current);
+      });
       setShowAnswer(true);
-      return { correct: false, shouldShowAnswer: true };
+      return { correct: false, shouldShowAnswer: true, attempts: newAttempts };
     }
 
-    return { correct: false, shouldShowAnswer: false };
+    return { correct: false, shouldShowAnswer: false, attempts: newAttempts };
   };
 
   const nextWord = (): boolean => {

@@ -92,23 +92,46 @@ export function GameComplete({ session, onPlayAgain }: GameCompleteProps) {
         </div>
 
         {/* Words Review */}
-        {session.attempts.some(a => !a.correct || a.attempts > 1) && (
-          <div className="border-t border-border pt-4">
-            <p className="text-sm font-medium text-muted-foreground mb-2">Words to practice:</p>
-            <div className="flex flex-wrap gap-2">
-              {session.attempts
-                .filter(a => !a.correct || a.attempts > 1)
-                .map((attempt, i) => (
-                  <span
-                    key={i}
-                    className="px-3 py-1 bg-destructive/10 text-destructive rounded-full text-sm font-medium"
-                  >
-                    {attempt.word}
-                  </span>
-                ))}
+        {/* Words Review */}
+        {(() => {
+          const needsPractice = session.attempts.filter(a => a.correct && a.attempts > 1);
+          const gotWrong = session.attempts.filter(a => !a.correct);
+          if (needsPractice.length === 0 && gotWrong.length === 0) return null;
+          return (
+            <div className="border-t border-border pt-4 space-y-4">
+              {needsPractice.length > 0 && (
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground mb-2">Keep practicing these:</p>
+                  <div className="flex flex-wrap gap-2">
+                    {needsPractice.map((attempt, i) => (
+                      <span
+                        key={`p-${i}`}
+                        className="px-3 py-1 bg-amber-100 text-amber-700 rounded-full text-sm font-medium"
+                      >
+                        {attempt.word}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {gotWrong.length > 0 && (
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground mb-2">Words to practice more:</p>
+                  <div className="flex flex-wrap gap-2">
+                    {gotWrong.map((attempt, i) => (
+                      <span
+                        key={`w-${i}`}
+                        className="px-3 py-1 bg-destructive/10 text-destructive rounded-full text-sm font-medium"
+                      >
+                        {attempt.word}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
-          </div>
-        )}
+          );
+        })()}
       </div>
 
       {/* Action Buttons */}

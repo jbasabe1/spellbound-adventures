@@ -71,7 +71,7 @@ export function MultipleChoice({ onComplete }: MultipleChoiceProps) {
   
   const [options, setOptions] = useState<string[]>([]);
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
-  const [feedback, setFeedback] = useState<'correct' | 'incorrect' | 'show-answer' | null>(null);
+  const [feedback, setFeedback] = useState<'correct' | 'incorrect' | 'try-again' | 'show-answer' | null>(null);
   const [mustSelectCorrect, setMustSelectCorrect] = useState(false);
 
   const currentWord: Word | undefined = currentWordSet?.words[currentWordIndex];
@@ -135,7 +135,7 @@ export function MultipleChoice({ onComplete }: MultipleChoiceProps) {
       setMustSelectCorrect(true);
       speakWord(currentWord!.word);
     } else {
-      setFeedback('incorrect');
+      setFeedback('try-again');
       setTimeout(() => {
         setFeedback(null);
         setSelectedOption(null);
@@ -233,7 +233,7 @@ export function MultipleChoice({ onComplete }: MultipleChoiceProps) {
         {/* Attempt Counter */}
         {attempts > 0 && !showAnswer && (
           <p className="text-center text-sm text-muted-foreground mt-4">
-            Attempt {attempts} of 2 - Try again!
+            Attempt {attempts} of 2 - Try again! 🚀
           </p>
         )}
       </div>
