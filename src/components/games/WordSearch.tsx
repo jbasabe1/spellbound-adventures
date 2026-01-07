@@ -49,7 +49,7 @@ export function WordSearch({ onComplete }: WordSearchProps) {
 
   const [gridInfo, setGridInfo] = useState(() => currentWord ? makeGrid(currentWord.word) : null);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
-  const [feedback, setFeedback] = useState<'correct' | 'incorrect' | 'show-answer' | null>(null);
+  const [feedback, setFeedback] = useState<'correct' | 'incorrect' | 'try-again' | 'show-answer' | null>(null);
 
   useEffect(() => {
     if (currentWord) {
@@ -188,7 +188,7 @@ export function WordSearch({ onComplete }: WordSearchProps) {
           {feedback === 'incorrect' && (
             <div className="flex items-center justify-center gap-2 text-red-600 font-bold">
               <XCircle className="h-6 w-6" />
-              <span>Try again!</span>
+              <span>Try again! 🚀</span>
             </div>
           )}
         </div>

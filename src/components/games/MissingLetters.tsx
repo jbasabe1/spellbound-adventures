@@ -43,7 +43,7 @@ export function MissingLetters({ onComplete }: MissingLettersProps) {
 
   const [maskInfo, setMaskInfo] = useState(() => currentWord ? buildMasked(currentWord.word) : null);
   const [input, setInput] = useState('');
-  const [feedback, setFeedback] = useState<'correct' | 'incorrect' | 'show-answer' | null>(null);
+  const [feedback, setFeedback] = useState<'correct' | 'incorrect' | 'try-again' | 'show-answer' | null>(null);
   const [hintShown, setHintShown] = useState(false);
 
   useEffect(() => {
@@ -184,7 +184,7 @@ export function MissingLetters({ onComplete }: MissingLettersProps) {
           {feedback === 'incorrect' && (
             <div className="flex items-center justify-center gap-2 text-red-600 font-bold">
               <XCircle className="h-6 w-6" />
-              <span>Try again!</span>
+              <span>Try again! 🚀</span>
             </div>
           )}
         </div>

@@ -21,7 +21,7 @@ export function LetterTiles({ onComplete }: LetterTilesProps) {
   
   const [selectedLetters, setSelectedLetters] = useState<{ letter: string; index: number }[]>([]);
   const [availableLetters, setAvailableLetters] = useState<{ letter: string; index: number; used: boolean }[]>([]);
-  const [feedback, setFeedback] = useState<'correct' | 'incorrect' | 'show-answer' | null>(null);
+  const [feedback, setFeedback] = useState<'correct' | 'incorrect' | 'try-again' | 'show-answer' | null>(null);
   const [mustTypeCorrect, setMustTypeCorrect] = useState(false);
 
   const currentWord: Word | undefined = currentWordSet?.words[currentWordIndex];
@@ -125,7 +125,7 @@ export function LetterTiles({ onComplete }: LetterTilesProps) {
         setFeedback(null);
       }, 2000);
     } else {
-      setFeedback('incorrect');
+      setFeedback('try-again');
       setTimeout(() => {
         setFeedback(null);
         clearAll();
@@ -278,7 +278,7 @@ export function LetterTiles({ onComplete }: LetterTilesProps) {
         {/* Attempt Counter */}
         {attempts > 0 && !showAnswer && (
           <p className="text-center text-sm text-muted-foreground mt-4">
-            Attempt {attempts} of 2 - Try again!
+            Attempt {attempts} of 2 - Try again! 🚀
           </p>
         )}
       </div>

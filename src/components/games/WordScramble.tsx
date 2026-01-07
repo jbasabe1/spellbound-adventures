@@ -21,7 +21,7 @@ export function WordScramble({ onComplete }: WordScrambleProps) {
   
   const [scrambled, setScrambled] = useState<{ letter: string; id: number }[]>([]);
   const [userOrder, setUserOrder] = useState<{ letter: string; id: number }[]>([]);
-  const [feedback, setFeedback] = useState<'correct' | 'incorrect' | 'show-answer' | null>(null);
+  const [feedback, setFeedback] = useState<'correct' | 'incorrect' | 'try-again' | 'show-answer' | null>(null);
   const [mustTypeCorrect, setMustTypeCorrect] = useState(false);
 
   const currentWord: Word | undefined = currentWordSet?.words[currentWordIndex];
@@ -87,6 +87,33 @@ export function WordScramble({ onComplete }: WordScrambleProps) {
     });
   };
 
+  const clearSelection = () => {
+    if (feedback) return;
+    setScrambled(prev => [...prev, ...userOrder]);
+    setUserOrder([]);
+  };
+
+  // On the first mistake, don't wipe everything—keep any correct letters already placed
+  const resetOnlyWrongLetters = () => {
+    if (!currentWord) return;
+    const target = currentWord.word.toLowerCase().split('');
+    const kept: { letter: string; id: number }[] = [];
+    const toReturn: { letter: string; id: number }[] = [];
+
+    for (let i = 0; i < userOrder.length; i++) {
+      const ltr = userOrder[i];
+      if (target[i] && ltr.letter.toLowerCase() === target[i]) {
+        kept.push(ltr);
+      } else {
+        toReturn.push(ltr);
+      }
+    }
+
+    setUserOrder(kept);
+    setScrambled(prev => [...prev, ...toReturn]);
+  };
+
+
   const handleSubmit = () => {
     if (!currentWord) return;
     
@@ -104,14 +131,12 @@ export function WordScramble({ onComplete }: WordScrambleProps) {
           }
         }, 1000);
       } else {
-        setFeedback('incorrect');
-        setTimeout(() => {
-          setFeedback(null);
-          // Reset
-          setScrambled(scrambleWord(currentWord.word));
-          setUserOrder([]);
-        }, 500);
-      }
+      setFeedback('try-again');
+      setTimeout(() => {
+        setFeedback(null);
+        resetOnlyWrongLetters();
+      }, 800);
+    }
       return;
     }
 
@@ -191,6 +216,16 @@ export function WordScramble({ onComplete }: WordScrambleProps) {
             >
               <Shuffle className="h-5 w-5" />
             </Button>
+          <Button
+            variant="outline"
+            size="lg"
+            onClick={clearSelection}
+            className="gap-2"
+            disabled={!!feedback || userOrder.length === 0}
+          >
+            <RotateCcw className="h-5 w-5" />
+            Clear
+          </Button>
           )}
         </div>
 
@@ -287,7 +322,7 @@ export function WordScramble({ onComplete }: WordScrambleProps) {
         {/* Attempt Counter */}
         {attempts > 0 && !showAnswer && (
           <p className="text-center text-sm text-muted-foreground mt-4">
-            Attempt {attempts} of 2 - Try again!
+            Try again! 🚀 (Attempt {attempts} of 2)
           </p>
         )}
       </div>

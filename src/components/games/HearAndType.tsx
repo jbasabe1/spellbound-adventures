@@ -21,7 +21,7 @@ export function HearAndType({ onComplete }: HearAndTypeProps) {
   } = useGame();
   
   const [input, setInput] = useState('');
-  const [feedback, setFeedback] = useState<'correct' | 'incorrect' | 'show-answer' | null>(null);
+  const [feedback, setFeedback] = useState<'correct' | 'incorrect' | 'try-again' | 'show-answer' | null>(null);
   const [showHint, setShowHint] = useState(false);
   const [mustTypeCorrect, setMustTypeCorrect] = useState(false);
 
@@ -91,7 +91,7 @@ export function HearAndType({ onComplete }: HearAndTypeProps) {
       setMustTypeCorrect(true);
       speakWord(currentWord.word);
     } else {
-      setFeedback('incorrect');
+      setFeedback('try-again');
       setTimeout(() => setFeedback(null), 1000);
     }
   };
@@ -237,7 +237,7 @@ export function HearAndType({ onComplete }: HearAndTypeProps) {
         {/* Attempt Counter */}
         {attempts > 0 && !showAnswer && (
           <p className="text-center text-sm text-muted-foreground mt-4">
-            Attempt {attempts} of 2 - Try again!
+            Attempt {attempts} of 2 - Try again! 🚀
           </p>
         )}
       </div>
