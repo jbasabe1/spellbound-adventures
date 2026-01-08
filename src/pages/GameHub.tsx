@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useGame } from '@/contexts/GameContext';
 import { Button } from '@/components/ui/button';
 import { GameMode } from '@/types';
-import { Volume2, Layers, CheckSquare, Shuffle, ArrowLeft, Search, Headphones, Type, TrendingUp } from 'lucide-react';
+import { Volume2, Layers, CheckSquare, Shuffle, ArrowLeft, Headphones, Type, TrendingUp } from 'lucide-react';
 
 const gameModes: { mode: GameMode; name: string; description: string; icon: React.ReactNode; color: string }[] = [
   { 
@@ -54,13 +54,6 @@ const gameModes: { mode: GameMode; name: string; description: string; icon: Reac
     description: 'Hear it, then choose it',
     icon: <Headphones className="h-8 w-8" />,
     color: 'from-indigo-500 to-sky-500'
-  },
-  { 
-    mode: 'word-search', 
-    name: 'Word Search', 
-    description: 'Find the word in a grid',
-    icon: <Search className="h-8 w-8" />,
-    color: 'from-fuchsia-500 to-violet-500'
   },
 ];
 

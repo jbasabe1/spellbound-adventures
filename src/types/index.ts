@@ -71,8 +71,7 @@ export type GameMode =
   | 'letter-tiles'
   | 'word-scramble'
   | 'missing-letters'
-  | 'audio-match'
-  | 'word-search';
+  | 'audio-match';
 
 // Game session
 export interface GameSession {

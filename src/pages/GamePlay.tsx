@@ -8,7 +8,6 @@ import { WordScramble } from '@/components/games/WordScramble';
 import { PracticeLadder } from '@/components/games/PracticeLadder';
 import { MissingLetters } from '@/components/games/MissingLetters';
 import { AudioMatch } from '@/components/games/AudioMatch';
-import { WordSearch } from '@/components/games/WordSearch';
 import { GameComplete } from '@/components/games/GameComplete';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, X } from 'lucide-react';
@@ -78,8 +77,6 @@ export default function GamePlay() {
         return <MissingLetters onComplete={handleComplete} />;
       case 'audio-match':
         return <AudioMatch onComplete={handleComplete} />;
-      case 'word-search':
-        return <WordSearch onComplete={handleComplete} />;
       default:
         return <div>Unknown game mode</div>;
     }

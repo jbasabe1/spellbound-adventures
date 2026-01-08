@@ -175,7 +175,6 @@ const [showGradeSelect, setShowGradeSelect] = useState(!currentChild?.grade);
       'practice-ladder',
       'missing-letters',
       'audio-match',
-      'word-search',
     ] as const;
     const mode = quickPlayModes[Math.floor(Math.random() * quickPlayModes.length)];
 
