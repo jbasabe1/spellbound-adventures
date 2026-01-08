@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { Star, Check } from 'lucide-react';
 
 interface CorrectFeedbackProps {
@@ -36,28 +36,18 @@ export function playCorrectSound() {
 }
 
 export function CorrectFeedback({ show }: CorrectFeedbackProps) {
-  const [visible, setVisible] = useState(false);
-
   useEffect(() => {
-    if (!show) {
-      setVisible(false);
-      return;
-    }
-
-    setVisible(true);
-    playCorrectSound();
-    const timer = setTimeout(() => setVisible(false), 800);
-    return () => clearTimeout(timer);
+    if (show) playCorrectSound();
   }, [show]);
 
-  if (!visible) return null;
+  if (!show) return null;
 
   return (
     <div className="fixed inset-0 flex items-center justify-center pointer-events-none z-50">
       <div className="relative animate-scale-in">
         {/* Star background */}
-        <Star 
-          className="h-32 w-32 text-yellow-400 fill-yellow-400 drop-shadow-lg animate-pulse" 
+        <Star
+          className="h-32 w-32 text-yellow-400 fill-yellow-400 drop-shadow-lg animate-pulse"
           strokeWidth={1.5}
         />
         {/* Check mark overlay */}
@@ -68,3 +58,4 @@ export function CorrectFeedback({ show }: CorrectFeedbackProps) {
     </div>
   );
 }
+
