@@ -8,7 +8,11 @@ interface CorrectFeedbackProps {
 // Play a success sound
 export function playCorrectSound() {
   try {
-    const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+    const audioConstructor =
+      window.AudioContext ||
+      (window as Window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+    if (!audioConstructor) return;
+    const audioContext = new audioConstructor();
     
     // Create a pleasant "ding" sound
     const oscillator = audioContext.createOscillator();
@@ -35,12 +39,15 @@ export function CorrectFeedback({ show }: CorrectFeedbackProps) {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
-    if (show) {
-      setVisible(true);
-      playCorrectSound();
-      const timer = setTimeout(() => setVisible(false), 800);
-      return () => clearTimeout(timer);
+    if (!show) {
+      setVisible(false);
+      return;
     }
+
+    setVisible(true);
+    playCorrectSound();
+    const timer = setTimeout(() => setVisible(false), 800);
+    return () => clearTimeout(timer);
   }, [show]);
 
   if (!visible) return null;
