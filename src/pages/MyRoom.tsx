@@ -10,19 +10,17 @@ import { toast } from 'sonner';
 export default function MyRoom() {
   const navigate = useNavigate();
   const { currentChild, ownedItems, roomPlacements, updateRoomPlacements } = useGame();
-    useEffect(() => {
+  const [editMode, setEditMode] = useState(false);
+  const [selectedItem, setSelectedItem] = useState<string | null>(null);
+  const [showInventory, setShowInventory] = useState(false);
+
+  useEffect(() => {
     if (!currentChild) navigate('/parent', { replace: true });
   }, [currentChild, navigate]);
 
   if (!currentChild) {
     return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
   }
-
-const [editMode, setEditMode] = useState(false);
-  const [selectedItem, setSelectedItem] = useState<string | null>(null);
-  const [showInventory, setShowInventory] = useState(false);
-
-  if (!currentChild) return null;
 
   const roomItems = getRoomItems();
   const ownedRoomItems = ownedItems
@@ -40,8 +38,8 @@ const [editMode, setEditMode] = useState(false);
     if (!item) return;
 
     // Find a valid position based on placement type
-    let x = 150 + Math.random() * 100;
-    let y = item.placement === 'wall' ? 80 : 220;
+    const x = 150 + Math.random() * 100;
+    const y = item.placement === 'wall' ? 80 : 220;
 
     const newPlacement: ItemPlacement = {
       itemId,

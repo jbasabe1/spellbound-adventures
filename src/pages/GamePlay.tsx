@@ -12,13 +12,23 @@ import { WordSearch } from '@/components/games/WordSearch';
 import { GameComplete } from '@/components/games/GameComplete';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, X } from 'lucide-react';
-import { GameSession } from '@/types';
+import { GameMode, GameSession } from '@/types';
 
 export default function GamePlay() {
   const { mode } = useParams<{ mode: string }>();
   const navigate = useNavigate();
   const { currentWordSet, endGame, startGame, currentGameMode, currentChild } = useGame();
   const [completedSession, setCompletedSession] = useState<GameSession | null>(null);
+  const gameModes: GameMode[] = [
+    'hear-and-type',
+    'letter-tiles',
+    'multiple-choice',
+    'word-scramble',
+    'practice-ladder',
+    'missing-letters',
+    'audio-match',
+    'word-search',
+  ];
 
   useEffect(() => {
     if (!currentChild) navigate('/parent', { replace: true });
@@ -37,8 +47,8 @@ export default function GamePlay() {
 
   const handlePlayAgain = () => {
     setCompletedSession(null);
-    if (mode) {
-      startGame(mode as any);
+    if (mode && gameModes.includes(mode as GameMode)) {
+      startGame(mode as GameMode);
     }
   };
 

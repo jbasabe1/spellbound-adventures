@@ -30,6 +30,14 @@ type ChildSaveData = {
   savedWordSets: SavedWordSet[];
 };
 
+type RawSavedWordSet = Omit<SavedWordSet, 'createdAt'> & { createdAt?: string | Date };
+type RawChildSaveData = {
+  profile?: ChildProfile;
+  ownedItems?: OwnedItem[];
+  roomPlacements?: ItemPlacement[];
+  savedWordSets?: RawSavedWordSet[];
+};
+
 interface GameState {
   currentChild: ChildProfile | null;
   childProfiles: ChildProfile[];
@@ -123,7 +131,7 @@ function safeJsonParse<T>(value: string | null, fallback: T): T {
   }
 }
 
-function reviveChildSaves(raw: Record<string, any>): Record<string, ChildSaveData> {
+function reviveChildSaves(raw: Record<string, RawChildSaveData>): Record<string, ChildSaveData> {
   const result: Record<string, ChildSaveData> = {};
   Object.entries(raw || {}).forEach(([id, v]) => {
     if (!v?.profile) return;
@@ -162,7 +170,10 @@ function reviveChildSaves(raw: Record<string, any>): Record<string, ChildSaveDat
       ownedItems: Array.isArray(v.ownedItems) ? v.ownedItems : [],
       roomPlacements: Array.isArray(v.roomPlacements) ? v.roomPlacements : [],
       savedWordSets: Array.isArray(v.savedWordSets)
-        ? v.savedWordSets.map((s: any) => ({ ...s, createdAt: s.createdAt ? new Date(s.createdAt) : new Date() }))
+        ? v.savedWordSets.map((s) => ({
+            ...s,
+            createdAt: s.createdAt ? new Date(s.createdAt) : new Date(),
+          }))
         : [],
     };
   });
@@ -177,7 +188,10 @@ export function GameProvider({ children }: { children: ReactNode }) {
 
   // Per-child saves (profile + inventory + room + saved lists)
   const [childSaves, setChildSaves] = useState<Record<string, ChildSaveData>>(() => {
-    const raw = safeJsonParse<Record<string, any>>(localStorage.getItem(STORAGE_KEYS.childSaves), {});
+    const raw = safeJsonParse<Record<string, RawChildSaveData>>(
+      localStorage.getItem(STORAGE_KEYS.childSaves),
+      {},
+    );
     return reviveChildSaves(raw);
   });
 
