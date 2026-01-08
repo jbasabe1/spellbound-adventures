@@ -39,7 +39,7 @@ export function CorrectFeedback({ show }: CorrectFeedbackProps) {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
-    if (!show) {
+   if (!show) {
       setVisible(false);
       return;
     }
