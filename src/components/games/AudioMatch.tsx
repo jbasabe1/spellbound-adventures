@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useGame } from '@/contexts/GameContext';
 import { Button } from '@/components/ui/button';
-import { Volume2, CheckCircle, XCircle, ArrowRight, Hand } from 'lucide-react';
+import { Volume2, CheckCircle, XCircle, Hand } from 'lucide-react';
 import { Word } from '@/types';
 import { CorrectFeedback } from './CorrectFeedback';
 
@@ -65,18 +65,14 @@ export function AudioMatch({ onComplete }: AudioMatchProps) {
     return () => clearTimeout(t);
   }, [currentWordIndex, buildChoices, currentWord, speakWord]);
 
-  useEffect(() => {
-    if (!showStarPopup) return;
-
-    const timer = setTimeout(() => {
-      setShowStarPopup(false);
-    }, 800);
-
-    return () => clearTimeout(timer);
-  }, [showStarPopup]);
-
   const handleSpeak = () => {
     if (currentWord) speakWord(currentWord.word);
+  };
+
+  const moveToNextWord = () => {
+    const hasNext = nextWord();
+    if (!hasNext) onComplete();
+    setFeedback(null);
   };
 
   const handlePick = (choice: string) => {
@@ -88,11 +84,11 @@ export function AudioMatch({ onComplete }: AudioMatchProps) {
       if (choice.toLowerCase() === currentWord.word.toLowerCase()) {
         setFeedback('correct');
         setShowStarPopup(true);
+        // Keep star visible for 800ms before moving to next word
         setTimeout(() => {
-          const hasNext = nextWord();
-          if (!hasNext) onComplete();
-          setFeedback(null);
-        }, 1000);
+          setShowStarPopup(false);
+          setTimeout(moveToNextWord, 200);
+        }, 800);
       } else {
         setFeedback('incorrect');
         setTimeout(() => {
@@ -107,11 +103,11 @@ export function AudioMatch({ onComplete }: AudioMatchProps) {
     if (result.correct) {
       setFeedback('correct');
       setShowStarPopup(true);
+      // Keep star visible for 800ms before moving to next word
       setTimeout(() => {
-        const hasNext = nextWord();
-        if (!hasNext) onComplete();
-        setFeedback(null);
-      }, 1000);
+        setShowStarPopup(false);
+        setTimeout(moveToNextWord, 200);
+      }, 800);
       return;
     }
 
@@ -127,14 +123,6 @@ export function AudioMatch({ onComplete }: AudioMatchProps) {
       setFeedback(null);
       setSelectedChoice(null);
     }, 850);
-  };
-
-  const handleContinueAfterAnswer = () => {
-    const hasNext = nextWord();
-    if (!hasNext) onComplete();
-    setFeedback(null);
-    setSelectedChoice(null);
-    setMustSelectCorrect(false);
   };
 
   if (!currentWord) return <div className="text-center p-8">Loading...</div>;

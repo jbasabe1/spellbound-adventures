@@ -55,6 +55,16 @@ export function HearAndType({ onComplete }: HearAndTypeProps) {
     }
   }, [currentWordIndex, currentWord, showAnswer, handleSpeak]);
 
+  const moveToNextWord = () => {
+    const hasMore = nextWord();
+    setInput('');
+    setFeedback(null);
+    setShowHint(false);
+    if (!hasMore) {
+      onComplete();
+    }
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!currentWord || !input.trim()) return;
@@ -65,16 +75,11 @@ export function HearAndType({ onComplete }: HearAndTypeProps) {
         setFeedback('correct');
         setShowStarPopup(true);
         setMustTypeCorrect(false);
+        // Keep star visible for 800ms before moving to next word
         setTimeout(() => {
-          const hasMore = nextWord();
-          setInput('');
-          setFeedback(null);
-          setShowHint(false);
           setShowStarPopup(false);
-          if (!hasMore) {
-            onComplete();
-          }
-        }, 1000);
+          setTimeout(moveToNextWord, 200);
+        }, 800);
       } else {
         // Wrong again, keep showing answer
         setFeedback('incorrect');
@@ -88,16 +93,11 @@ export function HearAndType({ onComplete }: HearAndTypeProps) {
     if (correct) {
       setFeedback('correct');
       setShowStarPopup(true);
+      // Keep star visible for 800ms before moving to next word
       setTimeout(() => {
-        const hasMore = nextWord();
-        setInput('');
-        setFeedback(null);
-        setShowHint(false);
         setShowStarPopup(false);
-        if (!hasMore) {
-          onComplete();
-        }
-      }, 1000);
+        setTimeout(moveToNextWord, 200);
+      }, 800);
     } else if (shouldShowAnswer) {
       setFeedback('show-answer');
       setMustTypeCorrect(true);
