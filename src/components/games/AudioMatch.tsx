@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Volume2, CheckCircle, XCircle, Hand } from 'lucide-react';
 import { Word } from '@/types';
 import { CorrectFeedback } from './CorrectFeedback';
+import { useCorrectFeedback } from './useCorrectFeedback';
 
 interface AudioMatchProps {
   onComplete: () => void;
@@ -34,7 +35,7 @@ export function AudioMatch({ onComplete }: AudioMatchProps) {
   const [selectedChoice, setSelectedChoice] = useState<string | null>(null);
   const [feedback, setFeedback] = useState<'correct' | 'incorrect' | 'try-again' | 'show-answer' | null>(null);
   const [mustSelectCorrect, setMustSelectCorrect] = useState(false);
-  const [showStarPopup, setShowStarPopup] = useState(false);
+  const { showStarPopup, triggerCorrectFeedback, resetCorrectFeedback } = useCorrectFeedback();
 
   const progress = useMemo(() => {
     if (!currentWordSet) return 0;
@@ -56,14 +57,14 @@ export function AudioMatch({ onComplete }: AudioMatchProps) {
     setFeedback(null);
     setSelectedChoice(null);
     setMustSelectCorrect(false);
-    setShowStarPopup(false);
+    resetCorrectFeedback();
     buildChoices();
     // auto-play word shortly
     const t = setTimeout(() => {
       if (currentWord) speakWord(currentWord.word);
     }, 450);
     return () => clearTimeout(t);
-  }, [currentWordIndex, buildChoices, currentWord, speakWord]);
+  }, [currentWordIndex, buildChoices, currentWord, speakWord, resetCorrectFeedback]);
 
   const handleSpeak = () => {
     if (currentWord) speakWord(currentWord.word);
@@ -83,12 +84,7 @@ export function AudioMatch({ onComplete }: AudioMatchProps) {
     if (mustSelectCorrect) {
       if (choice.toLowerCase() === currentWord.word.toLowerCase()) {
         setFeedback('correct');
-        setShowStarPopup(true);
-        // Keep star visible for 800ms before moving to next word
-        setTimeout(() => {
-          setShowStarPopup(false);
-          setTimeout(moveToNextWord, 200);
-        }, 800);
+        triggerCorrectFeedback(moveToNextWord);
       } else {
         setFeedback('incorrect');
         setTimeout(() => {
@@ -102,12 +98,7 @@ export function AudioMatch({ onComplete }: AudioMatchProps) {
     const result = submitAnswer(choice, currentWord);
     if (result.correct) {
       setFeedback('correct');
-      setShowStarPopup(true);
-      // Keep star visible for 800ms before moving to next word
-      setTimeout(() => {
-        setShowStarPopup(false);
-        setTimeout(moveToNextWord, 200);
-      }, 800);
+      triggerCorrectFeedback(moveToNextWord);
       return;
     }
 

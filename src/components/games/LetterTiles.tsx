@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Volume2, RotateCcw, CheckCircle, XCircle, ArrowRight, Trash2 } from 'lucide-react';
 import { Word } from '@/types';
 import { CorrectFeedback } from './CorrectFeedback';
+import { useCorrectFeedback } from './useCorrectFeedback';
 
 interface LetterTilesProps {
   onComplete: () => void;
@@ -23,7 +24,7 @@ export function LetterTiles({ onComplete }: LetterTilesProps) {
   const [availableLetters, setAvailableLetters] = useState<{ letter: string; index: number; used: boolean }[]>([]);
   const [feedback, setFeedback] = useState<'correct' | 'incorrect' | 'try-again' | 'show-answer' | null>(null);
   const [mustTypeCorrect, setMustTypeCorrect] = useState(false);
-  const [showStarPopup, setShowStarPopup] = useState(false);
+  const { showStarPopup, triggerCorrectFeedback, resetCorrectFeedback } = useCorrectFeedback();
 
   const currentWord: Word | undefined = currentWordSet?.words[currentWordIndex];
 
@@ -53,11 +54,11 @@ export function LetterTiles({ onComplete }: LetterTilesProps) {
       setSelectedLetters([]);
       setFeedback(null);
       setMustTypeCorrect(false);
-      setShowStarPopup(false);
+      resetCorrectFeedback();
       const timer = setTimeout(() => handleSpeak(), 500);
       return () => clearTimeout(timer);
     }
-  }, [currentWordIndex, currentWord, shuffleLetters, handleSpeak]);
+  }, [currentWordIndex, currentWord, shuffleLetters, handleSpeak, resetCorrectFeedback]);
 
   const selectLetter = (letterObj: { letter: string; index: number }) => {
     if (feedback) return;
@@ -99,13 +100,8 @@ export function LetterTiles({ onComplete }: LetterTilesProps) {
     if (mustTypeCorrect) {
       if (answer.toLowerCase() === currentWord.word.toLowerCase()) {
         setFeedback('correct');
-        setShowStarPopup(true);
         setMustTypeCorrect(false);
-        // Keep star visible for 800ms before moving to next word
-        setTimeout(() => {
-          setShowStarPopup(false);
-          setTimeout(moveToNextWord, 200);
-        }, 800);
+        triggerCorrectFeedback(moveToNextWord);
       } else {
         setFeedback('incorrect');
         setTimeout(() => {
@@ -120,12 +116,7 @@ export function LetterTiles({ onComplete }: LetterTilesProps) {
 
     if (correct) {
       setFeedback('correct');
-      setShowStarPopup(true);
-      // Keep star visible for 800ms before moving to next word
-      setTimeout(() => {
-        setShowStarPopup(false);
-        setTimeout(moveToNextWord, 200);
-      }, 800);
+      triggerCorrectFeedback(moveToNextWord);
     } else if (shouldShowAnswer) {
       setFeedback('show-answer');
       setMustTypeCorrect(true);
