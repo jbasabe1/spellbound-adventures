@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Eye, EyeOff, CheckCircle, XCircle, ArrowRight, Volume2 } from 'lucide-react';
 import { Word } from '@/types';
 import { CorrectFeedback } from './CorrectFeedback';
+import { useCorrectFeedback } from './useCorrectFeedback';
 
 interface PracticeLadderProps {
   onComplete: () => void;
@@ -31,15 +32,15 @@ export function PracticeLadder({ onComplete }: PracticeLadderProps) {
   const [phase, setPhase] = useState<'study' | 'recall'>('study');
   const [input, setInput] = useState('');
   const [feedback, setFeedback] = useState<'correct' | 'incorrect' | 'try-again' | 'show-answer' | null>(null);
-  const [showStarPopup, setShowStarPopup] = useState(false);
+  const { showStarPopup, triggerCorrectFeedback, resetCorrectFeedback } = useCorrectFeedback();
 
   useEffect(() => {
     // Reset when word changes
     setPhase('study');
     setInput('');
     setFeedback(null);
-    setShowStarPopup(false);
-  }, [currentWordIndex]);
+    resetCorrectFeedback();
+  }, [currentWordIndex, resetCorrectFeedback]);
 
   const progress = useMemo(() => {
     if (!currentWordSet) return 0;
@@ -62,15 +63,13 @@ export function PracticeLadder({ onComplete }: PracticeLadderProps) {
     const result = submitAnswer(input, currentWord);
     if (result.correct) {
       setFeedback('correct');
-      setShowStarPopup(true);
-      setTimeout(() => {
+      triggerCorrectFeedback(() => {
         const hasNext = nextWord();
         if (!hasNext) onComplete();
         setFeedback(null);
         setInput('');
         setPhase('study');
-        setShowStarPopup(false);
-      }, 900);
+      }, { visibleMs: 900, afterMs: 0 });
       return;
     }
 
