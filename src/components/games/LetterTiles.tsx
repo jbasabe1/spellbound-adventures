@@ -83,6 +83,14 @@ export function LetterTiles({ onComplete }: LetterTilesProps) {
     setAvailableLetters(prev => prev.map(l => ({ ...l, used: false })));
   };
 
+  const moveToNextWord = () => {
+    const hasMore = nextWord();
+    setFeedback(null);
+    if (!hasMore) {
+      onComplete();
+    }
+  };
+
   const handleSubmit = () => {
     if (!currentWord) return;
     
@@ -93,14 +101,11 @@ export function LetterTiles({ onComplete }: LetterTilesProps) {
         setFeedback('correct');
         setShowStarPopup(true);
         setMustTypeCorrect(false);
+        // Keep star visible for 800ms before moving to next word
         setTimeout(() => {
-          const hasMore = nextWord();
-          setFeedback(null);
           setShowStarPopup(false);
-          if (!hasMore) {
-            onComplete();
-          }
-        }, 1000);
+          setTimeout(moveToNextWord, 200);
+        }, 800);
       } else {
         setFeedback('incorrect');
         setTimeout(() => {
@@ -116,14 +121,11 @@ export function LetterTiles({ onComplete }: LetterTilesProps) {
     if (correct) {
       setFeedback('correct');
       setShowStarPopup(true);
+      // Keep star visible for 800ms before moving to next word
       setTimeout(() => {
-        const hasMore = nextWord();
-        setFeedback(null);
         setShowStarPopup(false);
-        if (!hasMore) {
-          onComplete();
-        }
-      }, 1000);
+        setTimeout(moveToNextWord, 200);
+      }, 800);
     } else if (shouldShowAnswer) {
       setFeedback('show-answer');
       setMustTypeCorrect(true);

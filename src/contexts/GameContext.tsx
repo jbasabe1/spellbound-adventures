@@ -136,7 +136,7 @@ function reviveChildSaves(raw: Record<string, RawChildSaveData>): Record<string,
   Object.entries(raw || {}).forEach(([id, v]) => {
     if (!v?.profile) return;
     // Ensure avatarConfig has gender (for profiles created before gender was added)
-    const avatarConfig = v.profile.avatarConfig || {};
+    const avatarConfig = (v.profile.avatarConfig || {}) as AvatarConfig;
     if (!avatarConfig.gender) {
       avatarConfig.gender = 'male';
     }
@@ -162,7 +162,7 @@ function reviveChildSaves(raw: Record<string, RawChildSaveData>): Record<string,
     
     const profile: ChildProfile = {
       ...v.profile,
-      avatarConfig,
+      avatarConfig: avatarConfig as AvatarConfig,
       createdAt: v.profile.createdAt ? new Date(v.profile.createdAt) : new Date(),
     };
     result[id] = {

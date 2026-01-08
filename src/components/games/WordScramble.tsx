@@ -115,6 +115,13 @@ export function WordScramble({ onComplete }: WordScrambleProps) {
     setScrambled(prev => [...prev, ...toReturn]);
   };
 
+  const moveToNextWord = () => {
+    const hasMore = nextWord();
+    setFeedback(null);
+    if (!hasMore) {
+      onComplete();
+    }
+  };
 
   const handleSubmit = () => {
     if (!currentWord) return;
@@ -126,21 +133,18 @@ export function WordScramble({ onComplete }: WordScrambleProps) {
         setFeedback('correct');
         setShowStarPopup(true);
         setMustTypeCorrect(false);
+        // Keep star visible for 800ms before moving to next word
         setTimeout(() => {
-          const hasMore = nextWord();
-          setFeedback(null);
           setShowStarPopup(false);
-          if (!hasMore) {
-            onComplete();
-          }
-        }, 1000);
+          setTimeout(moveToNextWord, 200);
+        }, 800);
       } else {
-      setFeedback('try-again');
-      setTimeout(() => {
-        setFeedback(null);
-        resetOnlyWrongLetters();
-      }, 800);
-    }
+        setFeedback('try-again');
+        setTimeout(() => {
+          setFeedback(null);
+          resetOnlyWrongLetters();
+        }, 800);
+      }
       return;
     }
 
@@ -149,14 +153,11 @@ export function WordScramble({ onComplete }: WordScrambleProps) {
     if (correct) {
       setFeedback('correct');
       setShowStarPopup(true);
+      // Keep star visible for 800ms before moving to next word
       setTimeout(() => {
-        const hasMore = nextWord();
-        setFeedback(null);
         setShowStarPopup(false);
-        if (!hasMore) {
-          onComplete();
-        }
-      }, 1000);
+        setTimeout(moveToNextWord, 200);
+      }, 800);
     } else if (shouldShowAnswer) {
       setFeedback('show-answer');
       setMustTypeCorrect(true);
