@@ -65,6 +65,16 @@ export function AudioMatch({ onComplete }: AudioMatchProps) {
     return () => clearTimeout(t);
   }, [currentWordIndex, buildChoices, currentWord, speakWord]);
 
+  useEffect(() => {
+    if (!showStarPopup) return;
+
+    const timer = setTimeout(() => {
+      setShowStarPopup(false);
+    }, 800);
+
+    return () => clearTimeout(timer);
+  }, [showStarPopup]);
+
   const handleSpeak = () => {
     if (currentWord) speakWord(currentWord.word);
   };
@@ -82,7 +92,6 @@ export function AudioMatch({ onComplete }: AudioMatchProps) {
           const hasNext = nextWord();
           if (!hasNext) onComplete();
           setFeedback(null);
-          setShowStarPopup(false);
         }, 1000);
       } else {
         setFeedback('incorrect');
@@ -102,7 +111,6 @@ export function AudioMatch({ onComplete }: AudioMatchProps) {
         const hasNext = nextWord();
         if (!hasNext) onComplete();
         setFeedback(null);
-        setShowStarPopup(false);
       }, 1000);
       return;
     }
