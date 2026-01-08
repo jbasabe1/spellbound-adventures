@@ -39,7 +39,10 @@ export function CorrectFeedback({ show }: CorrectFeedbackProps) {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
-   if (!show) return;
+    if (!show) {
+      setVisible(false);
+      return;
+    }
 
     setVisible(true);
     playCorrectSound();
