@@ -98,6 +98,13 @@ export function MultipleChoice({ onComplete }: MultipleChoiceProps) {
     }
   }, [currentWordIndex, currentWord, handleSpeak]);
 
+  const moveToNextWord = () => {
+    const hasMore = nextWord();
+    if (!hasMore) {
+      onComplete();
+    }
+  };
+
   const handleSelect = (option: string) => {
     if (feedback && !mustSelectCorrect) return;
     
@@ -107,13 +114,11 @@ export function MultipleChoice({ onComplete }: MultipleChoiceProps) {
       if (option.toLowerCase() === currentWord?.word.toLowerCase()) {
         setFeedback('correct');
         setShowStarPopup(true);
+        // Keep star visible for 800ms before moving to next word
         setTimeout(() => {
-          const hasMore = nextWord();
           setShowStarPopup(false);
-          if (!hasMore) {
-            onComplete();
-          }
-        }, 1000);
+          setTimeout(moveToNextWord, 200);
+        }, 800);
       } else {
         setFeedback('incorrect');
         setTimeout(() => {
@@ -129,13 +134,11 @@ export function MultipleChoice({ onComplete }: MultipleChoiceProps) {
     if (correct) {
       setFeedback('correct');
       setShowStarPopup(true);
+      // Keep star visible for 800ms before moving to next word
       setTimeout(() => {
-        const hasMore = nextWord();
         setShowStarPopup(false);
-        if (!hasMore) {
-          onComplete();
-        }
-      }, 1000);
+        setTimeout(moveToNextWord, 200);
+      }, 800);
     } else if (shouldShowAnswer) {
       setFeedback('show-answer');
       setMustSelectCorrect(true);
