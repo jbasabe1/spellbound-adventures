@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Volume2, RotateCcw, CheckCircle, XCircle, ArrowRight, Shuffle } from 'lucide-react';
 import { Word } from '@/types';
 import { CorrectFeedback } from './CorrectFeedback';
+import { useCorrectFeedback } from './useCorrectFeedback';
 
 interface WordScrambleProps {
   onComplete: () => void;
@@ -23,7 +24,7 @@ export function WordScramble({ onComplete }: WordScrambleProps) {
   const [userOrder, setUserOrder] = useState<{ letter: string; id: number }[]>([]);
   const [feedback, setFeedback] = useState<'correct' | 'incorrect' | 'try-again' | 'show-answer' | null>(null);
   const [mustTypeCorrect, setMustTypeCorrect] = useState(false);
-  const [showStarPopup, setShowStarPopup] = useState(false);
+  const { showStarPopup, triggerCorrectFeedback, resetCorrectFeedback } = useCorrectFeedback();
 
   const currentWord: Word | undefined = currentWordSet?.words[currentWordIndex];
 
@@ -59,11 +60,11 @@ export function WordScramble({ onComplete }: WordScrambleProps) {
       setUserOrder([]);
       setFeedback(null);
       setMustTypeCorrect(false);
-      setShowStarPopup(false);
+      resetCorrectFeedback();
       const timer = setTimeout(() => handleSpeak(), 500);
       return () => clearTimeout(timer);
     }
-  }, [currentWordIndex, currentWord, scrambleWord, handleSpeak]);
+  }, [currentWordIndex, currentWord, scrambleWord, handleSpeak, resetCorrectFeedback]);
 
   const selectLetter = (letterObj: { letter: string; id: number }) => {
     if (feedback) return;
@@ -131,13 +132,8 @@ export function WordScramble({ onComplete }: WordScrambleProps) {
     if (mustTypeCorrect) {
       if (answer.toLowerCase() === currentWord.word.toLowerCase()) {
         setFeedback('correct');
-        setShowStarPopup(true);
         setMustTypeCorrect(false);
-        // Keep star visible for 800ms before moving to next word
-        setTimeout(() => {
-          setShowStarPopup(false);
-          setTimeout(moveToNextWord, 200);
-        }, 800);
+        triggerCorrectFeedback(moveToNextWord);
       } else {
         setFeedback('try-again');
         setTimeout(() => {
@@ -152,12 +148,7 @@ export function WordScramble({ onComplete }: WordScrambleProps) {
 
     if (correct) {
       setFeedback('correct');
-      setShowStarPopup(true);
-      // Keep star visible for 800ms before moving to next word
-      setTimeout(() => {
-        setShowStarPopup(false);
-        setTimeout(moveToNextWord, 200);
-      }, 800);
+      triggerCorrectFeedback(moveToNextWord);
     } else if (shouldShowAnswer) {
       setFeedback('show-answer');
       setMustTypeCorrect(true);

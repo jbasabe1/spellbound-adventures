@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Volume2, CheckCircle, XCircle, Hand } from 'lucide-react';
 import { Word } from '@/types';
 import { CorrectFeedback } from './CorrectFeedback';
+import { useCorrectFeedback } from './useCorrectFeedback';
 
 interface MultipleChoiceProps {
   onComplete: () => void;
@@ -73,7 +74,7 @@ export function MultipleChoice({ onComplete }: MultipleChoiceProps) {
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const [feedback, setFeedback] = useState<'correct' | 'incorrect' | 'try-again' | 'show-answer' | null>(null);
   const [mustSelectCorrect, setMustSelectCorrect] = useState(false);
-  const [showStarPopup, setShowStarPopup] = useState(false);
+  const { showStarPopup, triggerCorrectFeedback, resetCorrectFeedback } = useCorrectFeedback();
 
   const currentWord: Word | undefined = currentWordSet?.words[currentWordIndex];
 
@@ -92,11 +93,11 @@ export function MultipleChoice({ onComplete }: MultipleChoiceProps) {
       setSelectedOption(null);
       setFeedback(null);
       setMustSelectCorrect(false);
-      setShowStarPopup(false);
+      resetCorrectFeedback();
       const timer = setTimeout(() => handleSpeak(), 500);
       return () => clearTimeout(timer);
     }
-  }, [currentWordIndex, currentWord, handleSpeak]);
+  }, [currentWordIndex, currentWord, handleSpeak, resetCorrectFeedback]);
 
   const moveToNextWord = () => {
     const hasMore = nextWord();
@@ -113,12 +114,7 @@ export function MultipleChoice({ onComplete }: MultipleChoiceProps) {
     if (mustSelectCorrect) {
       if (option.toLowerCase() === currentWord?.word.toLowerCase()) {
         setFeedback('correct');
-        setShowStarPopup(true);
-        // Keep star visible for 800ms before moving to next word
-        setTimeout(() => {
-          setShowStarPopup(false);
-          setTimeout(moveToNextWord, 200);
-        }, 800);
+        triggerCorrectFeedback(moveToNextWord);
       } else {
         setFeedback('incorrect');
         setTimeout(() => {
@@ -133,12 +129,7 @@ export function MultipleChoice({ onComplete }: MultipleChoiceProps) {
 
     if (correct) {
       setFeedback('correct');
-      setShowStarPopup(true);
-      // Keep star visible for 800ms before moving to next word
-      setTimeout(() => {
-        setShowStarPopup(false);
-        setTimeout(moveToNextWord, 200);
-      }, 800);
+      triggerCorrectFeedback(moveToNextWord);
     } else if (shouldShowAnswer) {
       setFeedback('show-answer');
       setMustSelectCorrect(true);

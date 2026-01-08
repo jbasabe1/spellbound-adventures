@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Volume2, RotateCcw, HelpCircle, CheckCircle, XCircle, ArrowRight } from 'lucide-react';
 import { Word } from '@/types';
 import { CorrectFeedback } from './CorrectFeedback';
+import { useCorrectFeedback } from './useCorrectFeedback';
 
 interface HearAndTypeProps {
   onComplete: () => void;
@@ -24,7 +25,7 @@ export function HearAndType({ onComplete }: HearAndTypeProps) {
   const [feedback, setFeedback] = useState<'correct' | 'incorrect' | 'try-again' | 'show-answer' | null>(null);
   const [showHint, setShowHint] = useState(false);
   const [mustTypeCorrect, setMustTypeCorrect] = useState(false);
-  const [showStarPopup, setShowStarPopup] = useState(false);
+  const { showStarPopup, triggerCorrectFeedback, resetCorrectFeedback } = useCorrectFeedback();
 
   const currentWord: Word | undefined = currentWordSet?.words[currentWordIndex];
 
@@ -46,14 +47,14 @@ export function HearAndType({ onComplete }: HearAndTypeProps) {
     setShowHint(false);
     setMustTypeCorrect(false);
     setInput('');
-    setShowStarPopup(false);
+    resetCorrectFeedback();
     
     // Speak the word when it changes
     if (currentWord && !showAnswer) {
       const timer = setTimeout(() => handleSpeak(), 500);
       return () => clearTimeout(timer);
     }
-  }, [currentWordIndex, currentWord, showAnswer, handleSpeak]);
+  }, [currentWordIndex, currentWord, showAnswer, handleSpeak, resetCorrectFeedback]);
 
   const moveToNextWord = () => {
     const hasMore = nextWord();
@@ -73,13 +74,8 @@ export function HearAndType({ onComplete }: HearAndTypeProps) {
       // Check if they typed the correct answer
       if (input.toLowerCase().trim() === currentWord.word.toLowerCase()) {
         setFeedback('correct');
-        setShowStarPopup(true);
         setMustTypeCorrect(false);
-        // Keep star visible for 800ms before moving to next word
-        setTimeout(() => {
-          setShowStarPopup(false);
-          setTimeout(moveToNextWord, 200);
-        }, 800);
+        triggerCorrectFeedback(moveToNextWord);
       } else {
         // Wrong again, keep showing answer
         setFeedback('incorrect');
@@ -92,12 +88,7 @@ export function HearAndType({ onComplete }: HearAndTypeProps) {
 
     if (correct) {
       setFeedback('correct');
-      setShowStarPopup(true);
-      // Keep star visible for 800ms before moving to next word
-      setTimeout(() => {
-        setShowStarPopup(false);
-        setTimeout(moveToNextWord, 200);
-      }, 800);
+      triggerCorrectFeedback(moveToNextWord);
     } else if (shouldShowAnswer) {
       setFeedback('show-answer');
       setMustTypeCorrect(true);

@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { CheckCircle, XCircle, RotateCcw, ArrowRight } from 'lucide-react';
 import { Word } from '@/types';
 import { CorrectFeedback } from './CorrectFeedback';
+import { useCorrectFeedback } from './useCorrectFeedback';
 
 interface WordSearchProps {
   onComplete: () => void;
@@ -51,16 +52,16 @@ export function WordSearch({ onComplete }: WordSearchProps) {
   const [gridInfo, setGridInfo] = useState(() => currentWord ? makeGrid(currentWord.word) : null);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [feedback, setFeedback] = useState<'correct' | 'incorrect' | 'try-again' | 'show-answer' | null>(null);
-  const [showStarPopup, setShowStarPopup] = useState(false);
+  const { showStarPopup, triggerCorrectFeedback, resetCorrectFeedback } = useCorrectFeedback();
 
   useEffect(() => {
     if (currentWord) {
       setGridInfo(makeGrid(currentWord.word));
       setSelectedIds([]);
       setFeedback(null);
-      setShowStarPopup(false);
+      resetCorrectFeedback();
     }
-  }, [currentWordIndex, currentWord]);
+  }, [currentWordIndex, currentWord, resetCorrectFeedback]);
 
   const progress = useMemo(() => {
     if (!currentWordSet) return 0;
@@ -99,14 +100,12 @@ export function WordSearch({ onComplete }: WordSearchProps) {
 
     if (result.correct) {
       setFeedback('correct');
-      setShowStarPopup(true);
-      setTimeout(() => {
+      triggerCorrectFeedback(() => {
         const hasNext = nextWord();
         if (!hasNext) onComplete();
         setSelectedIds([]);
         setFeedback(null);
-        setShowStarPopup(false);
-      }, 900);
+      }, { visibleMs: 900, afterMs: 0 });
       return;
     }
 

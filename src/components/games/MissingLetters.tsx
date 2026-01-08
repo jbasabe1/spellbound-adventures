@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { CheckCircle, XCircle, ArrowRight, HelpCircle, Volume2 } from 'lucide-react';
 import { Word } from '@/types';
 import { CorrectFeedback } from './CorrectFeedback';
+import { useCorrectFeedback } from './useCorrectFeedback';
 
 interface MissingLettersProps {
   onComplete: () => void;
@@ -46,7 +47,7 @@ export function MissingLetters({ onComplete }: MissingLettersProps) {
   const [input, setInput] = useState('');
   const [feedback, setFeedback] = useState<'correct' | 'incorrect' | 'try-again' | 'show-answer' | null>(null);
   const [hintShown, setHintShown] = useState(false);
-  const [showStarPopup, setShowStarPopup] = useState(false);
+  const { showStarPopup, triggerCorrectFeedback, resetCorrectFeedback } = useCorrectFeedback();
 
   useEffect(() => {
     if (currentWord) {
@@ -54,9 +55,9 @@ export function MissingLetters({ onComplete }: MissingLettersProps) {
       setInput('');
       setFeedback(null);
       setHintShown(false);
-      setShowStarPopup(false);
+      resetCorrectFeedback();
     }
-  }, [currentWordIndex, currentWord]);
+  }, [currentWordIndex, currentWord, resetCorrectFeedback]);
 
   const progress = useMemo(() => {
     if (!currentWordSet) return 0;
@@ -91,14 +92,12 @@ export function MissingLetters({ onComplete }: MissingLettersProps) {
     const result = submitAnswer(candidate, currentWord);
     if (result.correct) {
       setFeedback('correct');
-      setShowStarPopup(true);
-      setTimeout(() => {
+      triggerCorrectFeedback(() => {
         const hasNext = nextWord();
         if (!hasNext) onComplete();
         setFeedback(null);
         setInput('');
-        setShowStarPopup(false);
-      }, 900);
+      }, { visibleMs: 900, afterMs: 0 });
       return;
     }
 
