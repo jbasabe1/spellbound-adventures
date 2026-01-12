@@ -186,31 +186,14 @@ export function Avatar({ config, size = 'md', className = '' }: AvatarProps) {
           </>
         )}
 
-        {/* Long Hair */}
+        {/* Long Hair - Back portion rendered behind head */}
         {config.hairStyle === 'long' && (
           <>
+            {/* Back hair - rendered first so it's behind everything */}
             <path
-              d="M 24 32 Q 24 6 50 4 Q 76 6 76 32 Q 72 14 50 12 Q 28 14 24 32"
+              d="M 28 40 Q 22 55 24 80 Q 28 90 50 92 Q 72 90 76 80 Q 78 55 72 40"
               fill="url(#hairGradient)"
             />
-            {/* Side hair flows */}
-            <path
-              d="M 26 30 Q 22 45 24 70 Q 26 75 30 70 Q 28 50 30 35 Z"
-              fill="url(#hairGradient)"
-            />
-            <path
-              d="M 74 30 Q 78 45 76 70 Q 74 75 70 70 Q 72 50 70 35 Z"
-              fill="url(#hairGradient)"
-            />
-            {/* Back hair */}
-            <path
-              d="M 30 45 Q 28 60 32 75 Q 50 80 68 75 Q 72 60 70 45"
-              fill="url(#hairGradient)"
-              opacity="0.6"
-            />
-            {/* Hair texture */}
-            <path d="M 26 40 Q 24 50 26 60" fill="none" stroke={hairDark} strokeWidth="1" opacity="0.4" />
-            <path d="M 74 40 Q 76 50 74 60" fill="none" stroke={hairDark} strokeWidth="1" opacity="0.4" />
           </>
         )}
 
@@ -316,6 +299,29 @@ export function Avatar({ config, size = 'md', className = '' }: AvatarProps) {
         <ellipse cx="74" cy="35" rx="4" ry="6" fill={config.skinTone} />
         <ellipse cx="26" cy="35" rx="2" ry="3" fill={skinShadow} opacity="0.3" />
         <ellipse cx="74" cy="35" rx="2" ry="3" fill={skinShadow} opacity="0.3" />
+
+        {/* === LONG HAIR FRONT PORTIONS (rendered after head so it overlays properly) === */}
+        {config.hairStyle === 'long' && (
+          <>
+            {/* Top of head hair */}
+            <path
+              d="M 24 32 Q 24 6 50 4 Q 76 6 76 32 Q 72 14 50 12 Q 28 14 24 32"
+              fill="url(#hairGradient)"
+            />
+            {/* Side hair flows - in front of ears */}
+            <path
+              d="M 26 30 Q 20 50 22 75 Q 24 78 28 75 Q 26 55 28 35 Z"
+              fill="url(#hairGradient)"
+            />
+            <path
+              d="M 74 30 Q 80 50 78 75 Q 76 78 72 75 Q 74 55 72 35 Z"
+              fill="url(#hairGradient)"
+            />
+            {/* Hair texture */}
+            <path d="M 24 45 Q 22 55 24 65" fill="none" stroke={hairDark} strokeWidth="1" opacity="0.4" />
+            <path d="M 76 45 Q 78 55 76 65" fill="none" stroke={hairDark} strokeWidth="1" opacity="0.4" />
+          </>
+        )}
 
         {/* === EYES === */}
         {/* Eye whites */}

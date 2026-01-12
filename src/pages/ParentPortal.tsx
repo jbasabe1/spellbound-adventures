@@ -5,8 +5,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { GradeSelector } from '@/components/GradeSelector';
 import { GradeLevel, Word } from '@/types';
-import { Lock, Plus, Trash2, Edit3, Play } from 'lucide-react';
+import { Lock, Plus, Trash2, Edit3, Play, RotateCcw } from 'lucide-react';
 import { addCustomWord, getGradeLetterCap, getWordsByGrade, listCustomWords, removeCustomWord } from '@/data/wordBank';
+import { toast } from 'sonner';
 
 export default function ParentPortal() {
   const navigate = useNavigate();
@@ -18,6 +19,7 @@ export default function ParentPortal() {
     updateChildProfile,
     deleteChildProfile,
     selectChildProfile,
+    resetChildProgress,
   } = useGame();
 
   // First-time setup
@@ -235,6 +237,19 @@ export default function ParentPortal() {
                           title="Edit"
                         >
                           <Edit3 className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon-sm"
+                          onClick={() => {
+                            if (confirm(`Reset ${child.name}'s progress? This will reset their level, XP, coins, and remove all purchased items.`)) {
+                              resetChildProgress(child.id);
+                              toast.success(`${child.name}'s progress has been reset`);
+                            }
+                          }}
+                          title="Reset Progress"
+                        >
+                          <RotateCcw className="h-4 w-4 text-amber-500" />
                         </Button>
                         <Button
                           variant="ghost"
