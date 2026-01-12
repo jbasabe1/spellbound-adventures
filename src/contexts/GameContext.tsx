@@ -61,6 +61,7 @@ interface GameContextType extends GameState {
   updateChildProfile: (id: string, updates: Partial<Pick<ChildProfile, 'name' | 'grade' | 'avatarConfig' | 'settings'>>) => void;
   deleteChildProfile: (id: string) => void;
   selectChildProfile: (id: string) => void;
+  resetChildProgress: (id: string) => void;
 
   // Existing game APIs
   setCurrentChild: (child: ChildProfile | null) => void;
@@ -326,6 +327,33 @@ export function GameProvider({ children }: { children: ReactNode }) {
     const profile = childSaves[id]?.profile;
     if (!profile) return;
     setCurrentChildState(profile);
+  };
+
+  const resetChildProgress = (id: string) => {
+    setChildSaves(prev => {
+      const existing = prev[id];
+      if (!existing) return prev;
+      const resetProfile: ChildProfile = {
+        ...existing.profile,
+        xp: 0,
+        level: 1,
+        coins: 100,
+      };
+      return {
+        ...prev,
+        [id]: {
+          ...existing,
+          profile: resetProfile,
+          ownedItems: [],
+          roomPlacements: [],
+        },
+      };
+    });
+    if (currentChild?.id === id) {
+      setCurrentChildState(prev => prev ? { ...prev, xp: 0, level: 1, coins: 100 } : prev);
+      setOwnedItems([]);
+      setRoomPlacements([]);
+    }
   };
 
   const setCurrentChild = (child: ChildProfile | null) => {
@@ -647,6 +675,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
         updateChildProfile,
         deleteChildProfile,
         selectChildProfile,
+        resetChildProgress,
 
         setCurrentChild,
         createRandomWordSet,
