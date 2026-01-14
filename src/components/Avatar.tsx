@@ -481,6 +481,186 @@ export function Avatar({ config, size = 'md', className = '' }: AvatarProps) {
             <rect x={isFemale ? 15 : 11} y={isFemale ? 89 : 92} width="6" height="4" rx="1" fill="#87CEEB" />
           </>
         )}
+
+        {/* Bandana */}
+        {config.accessories.includes('bandana') && (
+          <>
+            <path d="M 26 22 Q 50 18 74 22 L 72 28 Q 50 24 28 28 Z" fill="#E74C3C" />
+            <path d="M 26 22 L 18 28 L 22 32 L 28 26" fill="#E74C3C" />
+            <circle cx="50" cy="23" r="2" fill="#FFD700" />
+          </>
+        )}
+
+        {/* Sunglasses */}
+        {config.accessories.includes('sunglasses') && (
+          <>
+            <rect x="32" y="28" width="14" height="10" rx="2" fill="#1a1a1a" />
+            <rect x="54" y="28" width="14" height="10" rx="2" fill="#1a1a1a" />
+            <line x1="46" y1="32" x2="54" y2="32" stroke="#1a1a1a" strokeWidth="2" />
+            <line x1="32" y1="32" x2="26" y2="30" stroke="#1a1a1a" strokeWidth="2" />
+            <line x1="68" y1="32" x2="74" y2="30" stroke="#1a1a1a" strokeWidth="2" />
+            {/* Lens shine */}
+            <line x1="35" y1="30" x2="38" y2="30" stroke="#666" strokeWidth="1" opacity="0.5" />
+            <line x1="57" y1="30" x2="60" y2="30" stroke="#666" strokeWidth="1" opacity="0.5" />
+          </>
+        )}
+
+        {/* Star Earrings */}
+        {config.accessories.includes('earrings') && (
+          <>
+            {/* Left earring */}
+            <polygon points="22,42 23,45 26,45 24,47 25,50 22,48 19,50 20,47 18,45 21,45" fill="#FFD700" />
+            {/* Right earring */}
+            <polygon points="78,42 79,45 82,45 80,47 81,50 78,48 75,50 76,47 74,45 77,45" fill="#FFD700" />
+          </>
+        )}
+
+        {/* Super Cape */}
+        {config.accessories.includes('cape') && (
+          <path
+            d="M 34 60 Q 20 80 25 120 L 50 115 L 75 120 Q 80 80 66 60"
+            fill="#E74C3C"
+            opacity="0.9"
+          />
+        )}
+
+        {/* Princess Tiara */}
+        {config.accessories.includes('tiara') && (
+          <>
+            <path d="M 32 12 L 36 4 L 42 10 L 50 0 L 58 10 L 64 4 L 68 12" fill="none" stroke="#FFD700" strokeWidth="2" />
+            <circle cx="50" cy="2" r="3" fill="#FF69B4" />
+            <circle cx="36" cy="6" r="2" fill="#87CEEB" />
+            <circle cx="64" cy="6" r="2" fill="#87CEEB" />
+            <path d="M 30 12 Q 50 16 70 12" fill="none" stroke="#FFD700" strokeWidth="3" />
+          </>
+        )}
+
+        {/* Wizard Hat */}
+        {config.accessories.includes('wizard-hat') && (
+          <>
+            <polygon points="50,-20 30,14 70,14" fill="#4A148C" />
+            <ellipse cx="50" cy="14" rx="22" ry="6" fill="#4A148C" />
+            <path d="M 50 -18 Q 60 -10 55 0" fill="none" stroke="#4A148C" strokeWidth="8" />
+            {/* Stars on hat */}
+            <polygon points="40,0 41,3 44,3 42,5 43,8 40,6 37,8 38,5 36,3 39,3" fill="#FFD700" />
+            <polygon points="55,-8 56,-5 59,-5 57,-3 58,0 55,-2 52,0 53,-3 51,-5 54,-5" fill="#FFD700" />
+            <circle cx="50" cy="-15" r="2" fill="#FFD700" />
+          </>
+        )}
+
+        {/* Pirate Hat */}
+        {config.accessories.includes('pirate-hat') && (
+          <>
+            <ellipse cx="50" cy="10" rx="28" ry="8" fill="#1a1a1a" />
+            <path d="M 22 10 Q 30 -8 50 -10 Q 70 -8 78 10" fill="#1a1a1a" />
+            {/* Skull and crossbones */}
+            <circle cx="50" cy="0" r="4" fill="white" />
+            <ellipse cx="48" cy="-1" rx="1" ry="1.5" fill="#1a1a1a" />
+            <ellipse cx="52" cy="-1" rx="1" ry="1.5" fill="#1a1a1a" />
+            <line x1="47" y1="3" x2="53" y2="3" stroke="#1a1a1a" strokeWidth="0.5" />
+            <line x1="44" y1="4" x2="56" y2="4" stroke="white" strokeWidth="1" />
+          </>
+        )}
+
+        {/* Cowboy Hat */}
+        {config.accessories.includes('cowboy-hat') && (
+          <>
+            <ellipse cx="50" cy="12" rx="32" ry="6" fill="#8B4513" />
+            <ellipse cx="50" cy="10" rx="18" ry="8" fill="#A0522D" />
+            <path d="M 32 10 Q 50 -4 68 10" fill="#8B4513" />
+            {/* Hat band */}
+            <ellipse cx="50" cy="10" rx="16" ry="6" fill="none" stroke="#FFD700" strokeWidth="2" />
+          </>
+        )}
+
+        {/* Viking Helmet */}
+        {config.accessories.includes('viking-helmet') && (
+          <>
+            <ellipse cx="50" cy="18" rx="26" ry="16" fill="#808080" />
+            <path d="M 26 22 Q 24 18 26 10 Q 32 16 26 22" fill="#808080" />
+            <path d="M 74 22 Q 76 18 74 10 Q 68 16 74 22" fill="#808080" />
+            {/* Horns */}
+            <path d="M 20 20 Q 10 10 8 -5 Q 12 0 18 10" fill="#F5F5DC" stroke="#D2B48C" strokeWidth="1" />
+            <path d="M 80 20 Q 90 10 92 -5 Q 88 0 82 10" fill="#F5F5DC" stroke="#D2B48C" strokeWidth="1" />
+            {/* Nose guard */}
+            <rect x="48" y="18" width="4" height="20" fill="#808080" />
+          </>
+        )}
+
+        {/* Astronaut Helmet */}
+        {config.accessories.includes('astronaut-helmet') && (
+          <>
+            <ellipse cx="50" cy="30" rx="30" ry="28" fill="#E8E8E8" />
+            <ellipse cx="50" cy="32" rx="22" ry="20" fill="#87CEEB" opacity="0.6" />
+            {/* Helmet shine */}
+            <path d="M 35 20 Q 45 15 55 20" fill="none" stroke="white" strokeWidth="3" opacity="0.7" />
+            {/* Helmet details */}
+            <rect x="18" y="28" width="6" height="8" rx="1" fill="#FFD700" />
+            <rect x="76" y="28" width="6" height="8" rx="1" fill="#FFD700" />
+          </>
+        )}
+
+        {/* Dragon Wings */}
+        {config.accessories.includes('dragon-wings') && (
+          <>
+            {/* Left wing */}
+            <path d="M 28 65 Q 0 50 -5 30 Q 5 40 10 35 Q 0 50 5 55 Q 10 45 15 45 Q 8 60 15 65 Q 18 55 22 58 L 28 65" fill="#8B0000" />
+            <path d="M 28 65 Q 15 55 10 45" fill="none" stroke="#4A0000" strokeWidth="1" />
+            <path d="M 28 65 Q 10 50 5 35" fill="none" stroke="#4A0000" strokeWidth="1" />
+            {/* Right wing */}
+            <path d="M 72 65 Q 100 50 105 30 Q 95 40 90 35 Q 100 50 95 55 Q 90 45 85 45 Q 92 60 85 65 Q 82 55 78 58 L 72 65" fill="#8B0000" />
+            <path d="M 72 65 Q 85 55 90 45" fill="none" stroke="#4A0000" strokeWidth="1" />
+            <path d="M 72 65 Q 90 50 95 35" fill="none" stroke="#4A0000" strokeWidth="1" />
+          </>
+        )}
+
+        {/* Fairy Wings */}
+        {config.accessories.includes('fairy-wings') && (
+          <>
+            {/* Left wings */}
+            <ellipse cx="15" cy="55" rx="18" ry="25" fill="#FFB6C1" opacity="0.6" />
+            <ellipse cx="20" cy="80" rx="12" ry="18" fill="#FFB6C1" opacity="0.5" />
+            {/* Right wings */}
+            <ellipse cx="85" cy="55" rx="18" ry="25" fill="#FFB6C1" opacity="0.6" />
+            <ellipse cx="80" cy="80" rx="12" ry="18" fill="#FFB6C1" opacity="0.5" />
+            {/* Wing details */}
+            <path d="M 15 40 Q 20 55 15 70" fill="none" stroke="#FF69B4" strokeWidth="1" opacity="0.5" />
+            <path d="M 85 40 Q 80 55 85 70" fill="none" stroke="#FF69B4" strokeWidth="1" opacity="0.5" />
+            {/* Sparkles */}
+            <circle cx="10" cy="50" r="1.5" fill="#FFD700" />
+            <circle cx="18" cy="65" r="1" fill="#FFD700" />
+            <circle cx="90" cy="50" r="1.5" fill="#FFD700" />
+            <circle cx="82" cy="65" r="1" fill="#FFD700" />
+          </>
+        )}
+
+        {/* Rainbow Aura */}
+        {config.accessories.includes('rainbow-aura') && (
+          <>
+            <ellipse cx="50" cy="75" rx="45" ry="55" fill="none" stroke="#FF0000" strokeWidth="2" opacity="0.4" />
+            <ellipse cx="50" cy="75" rx="48" ry="58" fill="none" stroke="#FF7F00" strokeWidth="2" opacity="0.4" />
+            <ellipse cx="50" cy="75" rx="51" ry="61" fill="none" stroke="#FFFF00" strokeWidth="2" opacity="0.4" />
+            <ellipse cx="50" cy="75" rx="54" ry="64" fill="none" stroke="#00FF00" strokeWidth="2" opacity="0.4" />
+            <ellipse cx="50" cy="75" rx="57" ry="67" fill="none" stroke="#0000FF" strokeWidth="2" opacity="0.4" />
+            <ellipse cx="50" cy="75" rx="60" ry="70" fill="none" stroke="#4B0082" strokeWidth="2" opacity="0.4" />
+            <ellipse cx="50" cy="75" rx="63" ry="73" fill="none" stroke="#9400D3" strokeWidth="2" opacity="0.4" />
+          </>
+        )}
+
+        {/* Golden Crown (premium) */}
+        {config.accessories.includes('golden-crown') && (
+          <>
+            <polygon points="28,6 34,-6 42,4 50,-10 58,4 66,-6 72,6" fill="#FFD700" />
+            <rect x="28" y="6" width="44" height="8" fill="#FFD700" />
+            {/* Gems */}
+            <circle cx="34" cy="-2" r="3" fill="#FF0000" />
+            <circle cx="50" cy="-6" r="4" fill="#00BFFF" />
+            <circle cx="66" cy="-2" r="3" fill="#32CD32" />
+            {/* Crown jewel details */}
+            <rect x="30" y="8" width="40" height="2" fill="#DAA520" />
+            <circle cx="50" cy="10" r="2" fill="#FF69B4" />
+          </>
+        )}
       </svg>
     </div>
   );
